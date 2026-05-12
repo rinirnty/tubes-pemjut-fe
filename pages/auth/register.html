@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daftar — PanenKu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream:#F7F2E8; --cream2:#EDE4CF; --brown:#5C3D1E; --brown2:#8B6340;
+      --brown3:#C4956A; --green:#4A7C3F; --green2:#6FA05E; --green3:#C9DFB5;
+      --gold:#C8962A; --gold2:#F0C55A; --text:#2C1F0E; --muted:#7A6040;
+      --error:#C0392B; --border:rgba(92,61,30,.18);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{height:100%;}
+    body{font-family:'DM Sans',sans-serif;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;color:var(--text);}
+
+    /* KIRI */
+    .side-left{background:linear-gradient(160deg,var(--brown) 0%,var(--green) 100%);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:3rem 4rem;position:relative;overflow:hidden;}
+    .side-left::before{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");pointer-events:none;opacity:.6;}
+    .deco{position:absolute;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none;}
+    .deco.d1{width:350px;height:350px;top:-80px;right:-80px;}
+    .deco.d2{width:220px;height:220px;bottom:40px;left:-60px;}
+    .left-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:#fff;text-decoration:none;display:flex;align-items:center;gap:.5rem;margin-bottom:2.5rem;position:relative;z-index:1;}
+    .left-logo span{color:#F0C55A;}
+    .left-visual{font-size:5rem;margin-bottom:1.5rem;position:relative;z-index:1;animation:float 5s ease-in-out infinite;}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+    .left-title{font-family:'Playfair Display',serif;font-size:1.9rem;color:#fff;line-height:1.25;margin-bottom:.75rem;position:relative;z-index:1;}
+    .left-title em{color:#F0C55A;font-style:italic;}
+    .left-desc{color:rgba(255,255,255,.72);font-size:.9rem;line-height:1.8;max-width:360px;position:relative;z-index:1;margin-bottom:2rem;}
+
+    /* role benefits */
+    .role-benefits{position:relative;z-index:1;width:100%;}
+    .rb-tabs{display:flex;gap:.5rem;margin-bottom:1rem;}
+    .rb-tab{padding:.35rem .85rem;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.65);font-size:.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+    .rb-tab.active{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.4);}
+    .rb-content{display:none;}
+    .rb-content.active{display:block;}
+    .rb-item{display:flex;align-items:center;gap:.6rem;margin-bottom:.65rem;}
+    .rb-item span{font-size:.83rem;color:rgba(255,255,255,.82);line-height:1.5;}
+    .rb-check{color:#F0C55A;font-size:.9rem;flex-shrink:0;}
+
+    /* KANAN */
+    .side-right{background:var(--cream);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:2.5rem 3.5rem;overflow-y:auto;}
+    .form-wrap{width:100%;max-width:420px;}
+    .back-link{display:flex;align-items:center;gap:.4rem;color:var(--muted);font-size:.82rem;text-decoration:none;margin-bottom:1.5rem;transition:color .2s;}
+    .back-link:hover{color:var(--brown);}
+    .form-header{margin-bottom:1.5rem;}
+    .form-header h1{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--text);margin-bottom:.3rem;}
+    .form-header p{color:var(--muted);font-size:.88rem;}
+    .form-header p a{color:var(--green);font-weight:500;text-decoration:none;}
+    .form-header p a:hover{text-decoration:underline;}
+
+    /* role tabs */
+    .role-tabs{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;margin-bottom:1.5rem;background:var(--cream2);border-radius:14px;padding:.4rem;}
+    .rtab{padding:.6rem .5rem;border-radius:10px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--muted);background:transparent;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.35rem;}
+    .rtab.active{background:#fff;color:var(--brown);box-shadow:0 2px 10px rgba(92,61,30,.12);}
+
+    /* fields */
+    .field{margin-bottom:1rem;}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+    label{display:block;font-size:.8rem;font-weight:500;color:var(--brown);margin-bottom:.4rem;}
+    .input-wrap{position:relative;}
+    .input-wrap .icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.95rem;pointer-events:none;color:var(--brown3);}
+    input[type=email],input[type=password],input[type=text],select{width:100%;padding:.7rem .9rem .7rem 2.5rem;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--text);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;}
+    select{appearance:none;cursor:pointer;}
+    input:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(74,124,63,.12);}
+    input.error-field,select.error-field{border-color:var(--error);}
+    .toggle-pw{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:.88rem;color:var(--muted);padding:0;}
+    .error-msg{font-size:.72rem;color:var(--error);margin-top:.3rem;display:none;align-items:center;gap:.25rem;}
+    .error-msg.show{display:flex;}
+
+    /* mitra only */
+    .mitra-only{display:none;}
+
+    /* pw strength */
+    .pw-strength{margin-top:.4rem;}
+    .pw-bar{height:3px;border-radius:99px;background:var(--cream2);overflow:hidden;margin-bottom:.25rem;}
+    .pw-fill{height:100%;border-radius:99px;width:0%;transition:width .3s,background .3s;}
+    .pw-label{font-size:.7rem;color:var(--muted);}
+
+    /* terms */
+    .terms-wrap{display:flex;align-items:flex-start;gap:.6rem;margin-bottom:1.25rem;}
+    .terms-wrap input[type=checkbox]{width:16px;height:16px;margin-top:2px;accent-color:var(--green);flex-shrink:0;padding:0;}
+    .terms-wrap label{font-size:.8rem;color:var(--muted);margin:0;font-weight:400;}
+    .terms-wrap label a{color:var(--green);text-decoration:none;}
+    .terms-wrap label a:hover{text-decoration:underline;}
+    .error-msg.terms-err{margin-bottom:.75rem;}
+
+    /* btn */
+    .btn-submit{width:100%;padding:.85rem;background:var(--brown);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:1rem;}
+    .btn-submit:hover{background:var(--green);transform:translateY(-2px);box-shadow:0 8px 24px rgba(74,124,63,.3);}
+    .btn-submit.loading{pointer-events:none;opacity:.75;}
+    .spinner{width:17px;height:17px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+    .btn-submit.loading .spinner{display:block;}
+    .btn-submit.loading .btn-text{display:none;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* divider */
+    .divider{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+    .divider span{font-size:.72rem;color:var(--muted);white-space:nowrap;}
+
+    .btn-oauth{width:100%;padding:.7rem;background:#fff;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:500;color:var(--text);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.6rem;}
+    .btn-oauth:hover{border-color:var(--brown2);background:var(--cream2);}
+
+    /* alert */
+    .alert{padding:.8rem 1rem;border-radius:12px;font-size:.83rem;margin-bottom:1rem;display:none;align-items:center;gap:.6rem;}
+    .alert.error{background:#FDECEA;color:var(--error);border:1px solid #FBBDBD;}
+    .alert.success{background:#EAF6EA;color:var(--green);border:1px solid #A8DAA0;}
+    .alert.show{display:flex;}
+
+    @media(max-width:768px){body{grid-template-columns:1fr;}.side-left{display:none;}.side-right{padding:2rem 1.5rem;}}
+  </style>
+</head>
+<body>
+
+<!-- KIRI -->
+<div class="side-left">
+  <div class="deco d1"></div><div class="deco d2"></div>
+  <a href="../../index.html" class="left-logo">🌾 Panen<span>Ku</span></a>
+  <div class="left-visual" id="left-visual">🛒</div>
+  <h2 class="left-title" id="left-title">Bergabung sebagai <em>Pembeli</em></h2>
+  <p class="left-desc" id="left-desc">Nikmati kemudahan memesan beras, ketan, ubi, dan komoditas pokok langsung dari mitra terpercaya.</p>
+
+  <div class="role-benefits">
+    <div class="rb-tabs">
+      <button class="rb-tab active" onclick="switchBenefit('pembeli',this)">🛒 Pembeli</button>
+      <button class="rb-tab" onclick="switchBenefit('mitra',this)">🤝 Mitra</button>
+    </div>
+    <div class="rb-content active" id="rb-pembeli">
+      <div class="rb-item"><span class="rb-check">✓</span><span>Akses katalog 50+ produk bahan pokok</span></div>
+      <div class="rb-item"><span class="rb-check">✓</span><span>Bayar mudah via QRIS</span></div>
+      <div class="rb-item"><span class="rb-check">✓</span><span>Lacak pengiriman real-time</span></div>
+      <div class="rb-item"><span class="rb-check">✓</span><span>Riwayat & invoice otomatis</span></div>
+      <div class="rb-item"><span class="rb-check">✓</span><span>Pesan ulang 1 klik</span></div>
+    </div>
+    <div class="rb-content" id="rb-mitra">
+      <div class="rb-item"><span class="rb-check">✓</span><span>Komisi otomatis per transaksi</span></div>
+      <div class="rb-item"><span class="rb-check">✓</span><span>Dashboard penjualan pribadi</span></div>
+      <div class="rb-item"><span class="rb-check">✓</span><span>QR pembayaran milik sendiri</span></div>
+      <div class="rb-item"><span class="rb-check">✓</span><span>Kelola produk sendiri</span></div>
+      <div class="rb-item"><span class="rb-check">✓</span><span>Laporan pendapatan bulanan</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- KANAN -->
+<div class="side-right">
+  <div class="form-wrap">
+    <a href="login.html" class="back-link">← Sudah punya akun? Masuk</a>
+
+    <div class="form-header">
+      <h1>Buat Akun</h1>
+      <p>Daftar gratis sebagai <strong id="role-label-text">Pembeli</strong> atau <a href="login.html">masuk</a> jika sudah punya akun.</p>
+    </div>
+
+    <!-- Role Tabs -->
+    <div class="role-tabs">
+      <button class="rtab active" onclick="setRole('pembeli',this)">🛒 Daftar sebagai Pembeli</button>
+      <button class="rtab" onclick="setRole('mitra',this)">🤝 Daftar sebagai Mitra</button>
+    </div>
+
+    <div class="alert error" id="alert-error">⚠️ <span id="alert-msg"></span></div>
+    <div class="alert success" id="alert-success">✅ <span id="alert-ok"></span></div>
+
+    <form id="reg-form" novalidate>
+
+      <!-- Nama -->
+      <div class="field-row">
+        <div class="field">
+          <label>Nama Depan</label>
+          <div class="input-wrap">
+            <span class="icon">👤</span>
+            <input type="text" id="fname" placeholder="Nama depan"/>
+          </div>
+          <div class="error-msg" id="err-fname">⚠ Wajib diisi</div>
+        </div>
+        <div class="field">
+          <label>Nama Belakang</label>
+          <div class="input-wrap">
+            <span class="icon">👤</span>
+            <input type="text" id="lname" placeholder="Nama belakang"/>
+          </div>
+          <div class="error-msg" id="err-lname">⚠ Wajib diisi</div>
+        </div>
+      </div>
+
+      <!-- Mitra only: Nama Toko -->
+      <div class="field mitra-only" id="field-toko">
+        <label>Nama Toko / Usaha</label>
+        <div class="input-wrap">
+          <span class="icon">🏪</span>
+          <input type="text" id="toko" placeholder="Nama toko atau usaha Anda"/>
+        </div>
+        <div class="error-msg" id="err-toko">⚠ Nama toko wajib diisi</div>
+      </div>
+
+      <!-- Email -->
+      <div class="field">
+        <label>Email</label>
+        <div class="input-wrap">
+          <span class="icon">✉️</span>
+          <input type="email" id="email" placeholder="email@contoh.com"/>
+        </div>
+        <div class="error-msg" id="err-email">⚠ Masukkan email yang valid</div>
+      </div>
+
+      <!-- No HP -->
+      <div class="field">
+        <label>Nomor HP</label>
+        <div class="input-wrap">
+          <span class="icon">📱</span>
+          <input type="text" id="phone" placeholder="08xxxxxxxxxx"/>
+        </div>
+        <div class="error-msg" id="err-phone">⚠ Format: 08xxxxxxxxxx</div>
+      </div>
+
+      <!-- Alamat -->
+      <div class="field">
+        <label>Alamat Pengiriman</label>
+        <div class="input-wrap">
+          <span class="icon">📍</span>
+          <input type="text" id="alamat" placeholder="Jl. Contoh No. 1, Kota"/>
+        </div>
+        <div class="error-msg" id="err-alamat">⚠ Alamat wajib diisi</div>
+      </div>
+
+      <!-- Mitra only: Bank & Rekening -->
+      <div class="field-row mitra-only" id="field-bank">
+        <div class="field">
+          <label>Nama Bank</label>
+          <div class="input-wrap">
+            <span class="icon">🏦</span>
+            <select id="bank">
+              <option value="">Pilih bank</option>
+              <option>BCA</option><option>BRI</option><option>BNI</option>
+              <option>Mandiri</option><option>BSI</option><option>DANA</option><option>OVO</option>
+            </select>
+          </div>
+          <div class="error-msg" id="err-bank">⚠ Pilih bank</div>
+        </div>
+        <div class="field">
+          <label>No. Rekening</label>
+          <div class="input-wrap">
+            <span class="icon">💳</span>
+            <input type="text" id="rekening" placeholder="No. rekening"/>
+          </div>
+          <div class="error-msg" id="err-rekening">⚠ Wajib diisi</div>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="field">
+        <label>Password</label>
+        <div class="input-wrap">
+          <span class="icon">🔒</span>
+          <input type="password" id="password" placeholder="Minimal 8 karakter" oninput="checkStrength(this.value)"/>
+          <button type="button" class="toggle-pw" onclick="togglePw('password',this)">👁</button>
+        </div>
+        <div class="error-msg" id="err-pw">⚠ Password minimal 8 karakter</div>
+        <div class="pw-strength">
+          <div class="pw-bar"><div class="pw-fill" id="pw-fill"></div></div>
+          <div class="pw-label" id="pw-label">Masukkan password</div>
+        </div>
+      </div>
+
+      <!-- Konfirmasi -->
+      <div class="field">
+        <label>Konfirmasi Password</label>
+        <div class="input-wrap">
+          <span class="icon">🔒</span>
+          <input type="password" id="konfirm" placeholder="Ulangi password"/>
+          <button type="button" class="toggle-pw" onclick="togglePw('konfirm',this)">👁</button>
+        </div>
+        <div class="error-msg" id="err-konfirm">⚠ Password tidak cocok</div>
+      </div>
+
+      <!-- Terms -->
+      <div class="terms-wrap">
+        <input type="checkbox" id="terms"/>
+        <label for="terms">Saya menyetujui <a href="#">Syarat & Ketentuan</a> dan <a href="#">Kebijakan Privasi</a> PanenKu</label>
+      </div>
+      <div class="error-msg terms-err" id="err-terms">⚠ Harap setujui syarat & ketentuan</div>
+
+      <button type="submit" class="btn-submit" id="submit-btn">
+        <span class="btn-text" id="btn-label">✅ Buat Akun Pembeli</span>
+        <div class="spinner"></div>
+      </button>
+
+      <div class="divider"><span>atau daftar dengan</span></div>
+      <button type="button" class="btn-oauth">🌐 Daftar dengan Google</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  let currentRole = 'pembeli';
+
+  // cek query param ?role=mitra dari index.html
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('role') === 'mitra') {
+    setRole('mitra', document.querySelectorAll('.rtab')[1]);
+    switchBenefit('mitra', document.querySelectorAll('.rb-tab')[1]);
+  }
+
+  function setRole(role, btn) {
+    currentRole = role;
+    document.querySelectorAll('.rtab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const isMitra = role === 'mitra';
+    document.querySelectorAll('.mitra-only').forEach(el => el.style.display = isMitra ? 'block' : 'none');
+    document.getElementById('field-bank').style.display = isMitra ? 'grid' : 'none';
+
+    document.getElementById('btn-label').textContent = isMitra ? '✅ Daftar sebagai Mitra' : '✅ Buat Akun Pembeli';
+    document.getElementById('role-label-text').textContent = isMitra ? 'Mitra Reseller' : 'Pembeli';
+
+    // update kiri
+    document.getElementById('left-visual').textContent = isMitra ? '🤝' : '🛒';
+    document.getElementById('left-title').innerHTML = isMitra ? 'Bergabung sebagai <em>Mitra</em>' : 'Bergabung sebagai <em>Pembeli</em>';
+    document.getElementById('left-desc').textContent = isMitra
+      ? 'Jual bahan pokok kami dan dapatkan komisi dari setiap transaksi yang berhasil.'
+      : 'Nikmati kemudahan memesan beras, ketan, ubi, dan komoditas pokok langsung dari mitra terpercaya.';
+
+    // sync benefit tabs
+    const rbBtns = document.querySelectorAll('.rb-tab');
+    rbBtns.forEach(b => b.classList.remove('active'));
+    rbBtns[isMitra ? 1 : 0].classList.add('active');
+    document.querySelectorAll('.rb-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('rb-' + role).classList.add('active');
+
+    clearAlerts();
+  }
+
+  function switchBenefit(role, btn) {
+    document.querySelectorAll('.rb-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.rb-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('rb-' + role).classList.add('active');
+  }
+
+  function clearAlerts() {
+    document.getElementById('alert-error').classList.remove('show');
+    document.getElementById('alert-success').classList.remove('show');
+    document.querySelectorAll('.error-msg').forEach(e => e.classList.remove('show'));
+    document.querySelectorAll('input,select').forEach(i => i.classList.remove('error-field'));
+  }
+
+  function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+  }
+
+  function checkStrength(val) {
+    const fill = document.getElementById('pw-fill');
+    const lbl  = document.getElementById('pw-label');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const lvl = [{w:'0%',bg:'transparent',t:''},{w:'25%',bg:'#E74C3C',t:'Lemah'},{w:'50%',bg:'#E67E22',t:'Cukup'},{w:'75%',bg:'#F1C40F',t:'Baik'},{w:'100%',bg:'#27AE60',t:'Kuat 💪'}][score];
+    fill.style.width = lvl.w; fill.style.background = lvl.bg;
+    lbl.textContent = val ? `Kekuatan: ${lvl.t}` : 'Masukkan password';
+  }
+
+  function validate() {
+    let ok = true;
+    const show = (id, err) => { document.getElementById(id).classList.toggle('show', err); };
+    const mark = (id, err) => { document.getElementById(id)?.classList.toggle('error-field', err); };
+
+    const fname = document.getElementById('fname').value.trim();
+    show('err-fname', fname.length < 2); mark('fname', fname.length < 2);
+    if (fname.length < 2) ok = false;
+
+    const lname = document.getElementById('lname').value.trim();
+    show('err-lname', lname.length < 2); mark('lname', lname.length < 2);
+    if (lname.length < 2) ok = false;
+
+    const email = document.getElementById('email').value.trim();
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    show('err-email', !emailOk); mark('email', !emailOk);
+    if (!emailOk) ok = false;
+
+    const phone = document.getElementById('phone').value.trim();
+    const phoneOk = /^08[0-9]{8,11}$/.test(phone);
+    show('err-phone', !phoneOk); mark('phone', !phoneOk);
+    if (!phoneOk) ok = false;
+
+    const alamat = document.getElementById('alamat').value.trim();
+    show('err-alamat', alamat.length < 5); mark('alamat', alamat.length < 5);
+    if (alamat.length < 5) ok = false;
+
+    const pw = document.getElementById('password').value;
+    show('err-pw', pw.length < 8); mark('password', pw.length < 8);
+    if (pw.length < 8) ok = false;
+
+    const kf = document.getElementById('konfirm').value;
+    show('err-konfirm', kf !== pw); mark('konfirm', kf !== pw);
+    if (kf !== pw) ok = false;
+
+    if (currentRole === 'mitra') {
+      const toko = document.getElementById('toko').value.trim();
+      show('err-toko', toko.length < 2); mark('toko', toko.length < 2);
+      if (toko.length < 2) ok = false;
+
+      const bank = document.getElementById('bank').value;
+      show('err-bank', !bank); mark('bank', !bank);
+      if (!bank) ok = false;
+
+      const rek = document.getElementById('rekening').value.trim();
+      show('err-rekening', rek.length < 5); mark('rekening', rek.length < 5);
+      if (rek.length < 5) ok = false;
+    }
+
+    const terms = document.getElementById('terms').checked;
+    show('err-terms', !terms);
+    if (!terms) ok = false;
+
+    return ok;
+  }
+
+  document.getElementById('reg-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    clearAlerts();
+    if (!validate()) return;
+
+    const btn = document.getElementById('submit-btn');
+    btn.classList.add('loading');
+    await new Promise(r => setTimeout(r, 1800));
+    btn.classList.remove('loading');
+
+    document.getElementById('alert-ok').textContent =
+      currentRole === 'mitra'
+        ? 'Pendaftaran mitra berhasil! Admin akan memverifikasi akun Anda. Silakan cek email.'
+        : 'Akun berhasil dibuat! Silakan masuk dengan akun baru Anda.';
+    document.getElementById('alert-success').classList.add('show');
+
+    setTimeout(() => { window.location.href = 'login.html'; }, 2500);
+  });
+</script>
+</body>
+</html>
