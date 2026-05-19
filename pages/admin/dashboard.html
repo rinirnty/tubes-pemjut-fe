@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Admin — PanenKu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../assets/css/admin-shared.css">
+  <style>
+    /* Chart bar */
+    .chart-wrap { background:#fff; border-radius:16px; border:1px solid var(--border); padding:1.5rem; }
+    .chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; }
+    .chart-bars { display:flex; align-items:flex-end; gap:.6rem; height:160px; }
+    .bar-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:.4rem; }
+    .bar { width:100%; border-radius:8px 8px 0 0; background:var(--brown); transition:height .6s ease; min-height:4px; }
+    .bar:hover { background:var(--green); }
+    .bar-label { font-size:.68rem; color:var(--muted); }
+    .bar-val { font-size:.68rem; font-weight:600; color:var(--brown); }
+
+    /* Donut chart */
+    .donut-wrap { position:relative; width:120px; height:120px; flex-shrink:0; }
+    .donut-wrap svg { transform:rotate(-90deg); }
+    .donut-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .donut-pct { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700; color:var(--text); }
+    .donut-sub { font-size:.65rem; color:var(--muted); }
+    .legend-item { display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:var(--muted); margin-bottom:.4rem; }
+    .legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+    /* activity feed */
+    .activity-item { display:flex; align-items:flex-start; gap:.85rem; padding:.85rem 0; border-bottom:1px solid var(--border); }
+    .activity-item:last-child { border-bottom:none; }
+    .act-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+    .act-title { font-size:.85rem; font-weight:500; color:var(--text); margin-bottom:.15rem; }
+    .act-time { font-size:.72rem; color:var(--muted); }
+    .act-amount { font-family:'DM Mono',monospace; font-size:.82rem; font-weight:500; color:var(--green); margin-left:auto; white-space:nowrap; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <a href="../../../index.html">🌾 Panen<span>Ku</span></a>
+  </div>
+  <div class="sidebar-role">Admin Panel</div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-item active"><span class="nav-icon">📊</span> Dashboard</a>
+    <a href="products.html" class="nav-item"><span class="nav-icon">🌾</span> Produk</a>
+    <a href="orders.html" class="nav-item"><span class="nav-icon">📦</span> Pesanan <span class="nav-badge">12</span></a>
+    <a href="clients.html" class="nav-item"><span class="nav-icon">👥</span> Pengguna</a>
+    <a href="reports.html" class="nav-item"><span class="nav-icon">📈</span> Laporan</a>
+    <div class="sidebar-divider"></div>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙️</span> Pengaturan</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-profile">
+      <div class="admin-avatar">👨‍💼</div>
+      <div>
+        <div class="admin-name">Admin PanenKu</div>
+        <div class="admin-email">admin@panenku.com</div>
+      </div>
+      <button class="btn-logout" title="Logout" onclick="window.location.href='../../auth/login.html'">🚪</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="breadcrumb">Selamat datang kembali, Admin 👋</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-btn" title="Notifikasi"><span>🔔</span><div class="notif-dot"></div></div>
+      <div class="topbar-btn" title="Profil">👨‍💼</div>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- Stat Cards -->
+    <div class="stat-grid reveal">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#EAF3DE">💰</div>
+        <div>
+          <div class="stat-value">Rp 48,2jt</div>
+          <div class="stat-label">Total Pendapatan</div>
+          <div class="stat-change up">▲ 12% dari bulan lalu</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#FFF0E0">📦</div>
+        <div>
+          <div class="stat-value">284</div>
+          <div class="stat-label">Total Pesanan</div>
+          <div class="stat-change up">▲ 8% dari bulan lalu</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#E0F0FF">👥</div>
+        <div>
+          <div class="stat-value">1.240</div>
+          <div class="stat-label">Total Pengguna</div>
+          <div class="stat-change up">▲ 24 baru minggu ini</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#FFF8E0">🤝</div>
+        <div>
+          <div class="stat-value">83</div>
+          <div class="stat-label">Mitra Aktif</div>
+          <div class="stat-change down">▼ 2 nonaktif bulan ini</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart + Donut -->
+    <div class="grid-2 reveal" style="margin-bottom:1.25rem">
+      <!-- Bar Chart -->
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <div class="section-title" style="margin:0">Penjualan 7 Hari</div>
+          <span class="badge badge-green">↑ Naik</span>
+        </div>
+        <div class="chart-bars" id="bar-chart"></div>
+      </div>
+      <!-- Donut -->
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <div class="section-title" style="margin:0">Produk Terlaris</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:2rem">
+          <div class="donut-wrap">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="45" fill="none" stroke="var(--cream2)" stroke-width="18"/>
+              <circle cx="60" cy="60" r="45" fill="none" stroke="var(--brown)" stroke-width="18" stroke-dasharray="113 170" stroke-dashoffset="0"/>
+              <circle cx="60" cy="60" r="45" fill="none" stroke="var(--green)" stroke-width="18" stroke-dasharray="68 215" stroke-dashoffset="-113"/>
+              <circle cx="60" cy="60" r="45" fill="none" stroke="var(--gold)" stroke-width="18" stroke-dasharray="45 238" stroke-dashoffset="-181"/>
+              <circle cx="60" cy="60" r="45" fill="none" stroke="var(--brown3)" stroke-width="18" stroke-dasharray="57 226" stroke-dashoffset="-226"/>
+            </svg>
+            <div class="donut-center"><span class="donut-pct">50+</span><span class="donut-sub">Produk</span></div>
+          </div>
+          <div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--brown)"></div> Beras Putih — 40%</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Beras Ketan — 24%</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div> Ubi Jalar — 16%</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--brown3)"></div> Lainnya — 20%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Orders + Activity -->
+    <div class="grid-2 reveal">
+      <!-- Recent Orders -->
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="table-title">Pesanan Terbaru</div>
+          <a href="orders.html" class="btn btn-outline btn-sm">Lihat Semua</a>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Invoice</th><th>Pembeli</th><th>Total</th><th>Status</th>
+          </tr></thead>
+          <tbody id="recent-orders"></tbody>
+        </table>
+      </div>
+      <!-- Activity Feed -->
+      <div class="card">
+        <div class="section-title">Aktivitas Terkini</div>
+        <div id="activity-feed"></div>
+      </div>
+    </div>
+
+    <!-- Pending Mitra -->
+    <div class="table-wrap reveal" style="margin-top:1.25rem">
+      <div class="table-header">
+        <div class="table-title">⏳ Mitra Menunggu Verifikasi</div>
+        <a href="clients.html" class="btn btn-outline btn-sm">Kelola Semua</a>
+      </div>
+      <table>
+        <thead><tr><th>Nama</th><th>Toko</th><th>Daftar</th><th>Aksi</th></tr></thead>
+        <tbody id="pending-mitra"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── BAR CHART
+const days = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+const vals = [3200000,4100000,2800000,5600000,4900000,7200000,6100000];
+const max  = Math.max(...vals);
+const bc   = document.getElementById('bar-chart');
+days.forEach((d,i) => {
+  const pct = (vals[i]/max*100).toFixed(0);
+  bc.innerHTML += `
+    <div class="bar-col">
+      <div class="bar-val">Rp${(vals[i]/1000000).toFixed(1)}jt</div>
+      <div class="bar" style="height:${pct}%;background:${i===5?'var(--green)':'var(--brown)'}"></div>
+      <div class="bar-label">${d}</div>
+    </div>`;
+});
+
+// ── RECENT ORDERS
+const orders = [
+  {inv:'#INV-0284',buyer:'Ibu Ratna',total:'Rp 65.000',status:'selesai'},
+  {inv:'#INV-0283',buyer:'Pak Darto',total:'Rp 128.000',status:'dikirim'},
+  {inv:'#INV-0282',buyer:'Bu Siti',total:'Rp 45.000',status:'diproses'},
+  {inv:'#INV-0281',buyer:'Pak Budi',total:'Rp 210.000',status:'pending'},
+  {inv:'#INV-0280',buyer:'CV Maju',total:'Rp 540.000',status:'selesai'},
+];
+const statusBadge = {selesai:'badge-green',dikirim:'badge-blue',diproses:'badge-gold',pending:'badge-gray',dibatalkan:'badge-red'};
+const tbody = document.getElementById('recent-orders');
+orders.forEach(o => {
+  tbody.innerHTML += `<tr>
+    <td><span style="font-family:'DM Mono',monospace;font-size:.8rem">${o.inv}</span></td>
+    <td>${o.buyer}</td>
+    <td style="font-weight:600">${o.total}</td>
+    <td><span class="badge ${statusBadge[o.status]}">${o.status}</span></td>
+  </tr>`;
+});
+
+// ── ACTIVITY
+const acts = [
+  {icon:'🛒',bg:'#EAF3DE',title:'Pesanan baru dari Ibu Ratna',time:'2 menit lalu',amount:'+Rp 65.000'},
+  {icon:'🤝',bg:'#FFF0E0',title:'Mitra baru mendaftar: Toko Makmur',time:'15 menit lalu',amount:''},
+  {icon:'💰',bg:'#EAF6EA',title:'Pembayaran QRIS berhasil #INV-0283',time:'32 menit lalu',amount:'+Rp 128.000'},
+  {icon:'📦',bg:'#E0F0FF',title:'Pesanan #INV-0281 dikirim',time:'1 jam lalu',amount:''},
+  {icon:'⚠️',bg:'#FDECEA',title:'Stok Beras Ketan hampir habis',time:'2 jam lalu',amount:''},
+];
+const af = document.getElementById('activity-feed');
+acts.forEach(a => {
+  af.innerHTML += `
+    <div class="activity-item">
+      <div class="act-icon" style="background:${a.bg}">${a.icon}</div>
+      <div style="flex:1">
+        <div class="act-title">${a.title}</div>
+        <div class="act-time">${a.time}</div>
+      </div>
+      ${a.amount ? `<div class="act-amount">${a.amount}</div>` : ''}
+    </div>`;
+});
+
+// ── PENDING MITRA
+const mitras = [
+  {nama:'Pak Darmawan',toko:'Toko Makmur Jaya',tgl:'19 Mei 2025'},
+  {nama:'Bu Lestari',toko:'UD Sumber Pangan',tgl:'18 Mei 2025'},
+  {nama:'CV Agri Nusantara',toko:'CV Agri Nusantara',tgl:'17 Mei 2025'},
+];
+const pm = document.getElementById('pending-mitra');
+mitras.forEach(m => {
+  pm.innerHTML += `<tr>
+    <td><div style="display:flex;align-items:center;gap:.6rem"><div class="avatar" style="background:var(--cream2)">🤝</div>${m.nama}</div></td>
+    <td>${m.toko}</td>
+    <td style="font-size:.8rem;color:var(--muted)">${m.tgl}</td>
+    <td>
+      <div style="display:flex;gap:.4rem">
+        <button class="btn btn-green btn-sm" onclick="verif(this,'${m.nama}')">✓ Verifikasi</button>
+        <button class="btn btn-red btn-sm" onclick="tolak(this,'${m.nama}')">✕ Tolak</button>
+      </div>
+    </td>
+  </tr>`;
+});
+
+function verif(btn, nama) {
+  const row = btn.closest('tr');
+  row.cells[3].innerHTML = '<span class="badge badge-green">✓ Terverifikasi</span>';
+  setTimeout(() => row.style.opacity = '0', 800);
+  setTimeout(() => row.remove(), 1200);
+}
+function tolak(btn, nama) {
+  const row = btn.closest('tr');
+  row.cells[3].innerHTML = '<span class="badge badge-red">✕ Ditolak</span>';
+  setTimeout(() => row.style.opacity = '0', 800);
+  setTimeout(() => row.remove(), 1200);
+}
+
+// ── REVEAL
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e,i) => { if(e.isIntersecting){ setTimeout(()=>e.target.classList.add('visible'),i*100); obs.unobserve(e.target); } });
+}, {threshold:.1});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

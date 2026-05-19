@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kelola Produk — PanenKu Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../assets/css/admin-shared.css">
+  <style>
+    .prod-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; }
+    .prod-card { background:#fff; border-radius:16px; overflow:hidden; border:1px solid var(--border); transition:transform .2s,box-shadow .2s; }
+    .prod-card:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(92,61,30,.12); }
+    .prod-thumb { height:140px; display:flex; align-items:center; justify-content:center; font-size:4.5rem; position:relative; }
+    .prod-stock-badge { position:absolute; top:10px; right:10px; font-size:.68rem; font-weight:700; padding:.2rem .6rem; border-radius:999px; }
+    .prod-body { padding:1rem 1.1rem; }
+    .prod-cat { font-size:.68rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--green2); margin-bottom:.25rem; }
+    .prod-name { font-weight:600; font-size:.92rem; margin-bottom:.2rem; }
+    .prod-mitra { font-size:.75rem; color:var(--muted); margin-bottom:.6rem; }
+    .prod-footer { display:flex; align-items:center; justify-content:space-between; }
+    .prod-price { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--brown); }
+    .prod-unit { font-size:.7rem; color:var(--muted); }
+    .prod-actions { display:flex; gap:.35rem; }
+    .view-toggle { display:flex; gap:.4rem; }
+    .vt-btn { width:34px; height:34px; border-radius:8px; border:1px solid var(--border); background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:.9rem; transition:all .2s; }
+    .vt-btn.active { background:var(--brown); color:#fff; border-color:var(--brown); }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo"><a href="../../../index.html">🌾 Panen<span>Ku</span></a></div>
+  <div class="sidebar-role">Admin Panel</div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+    <a href="products.html" class="nav-item active"><span class="nav-icon">🌾</span> Produk</a>
+    <a href="orders.html" class="nav-item"><span class="nav-icon">📦</span> Pesanan <span class="nav-badge">12</span></a>
+    <a href="clients.html" class="nav-item"><span class="nav-icon">👥</span> Pengguna</a>
+    <a href="reports.html" class="nav-item"><span class="nav-icon">📈</span> Laporan</a>
+    <div class="sidebar-divider"></div>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙️</span> Pengaturan</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-profile">
+      <div class="admin-avatar">👨‍💼</div>
+      <div><div class="admin-name">Admin PanenKu</div><div class="admin-email">admin@panenku.com</div></div>
+      <button class="btn-logout" onclick="window.location.href='../../auth/login.html'">🚪</button>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div><div class="page-title">Kelola Produk</div><div class="breadcrumb">Admin / Produk</div></div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-primary" onclick="openModal()">+ Tambah Produk</button>
+      <div class="topbar-btn">🔔<div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <!-- Stat ringkas -->
+    <div class="stat-grid reveal" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-card"><div class="stat-icon" style="background:#EAF3DE">🌾</div><div><div class="stat-value">52</div><div class="stat-label">Total Produk</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FFF8E0">✅</div><div><div class="stat-value">48</div><div class="stat-label">Aktif</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FDECEA">⚠️</div><div><div class="stat-value">4</div><div class="stat-label">Stok Menipis</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#F5EDE0">📂</div><div><div class="stat-value">5</div><div class="stat-label">Kategori</div></div></div>
+    </div>
+
+    <!-- Filter & Search -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1.25rem" class="reveal">
+      <div class="filter-bar" style="margin:0">
+        <button class="filter-btn active" onclick="filterKat('semua',this)">Semua</button>
+        <button class="filter-btn" onclick="filterKat('Beras Putih',this)">🍚 Beras Putih</button>
+        <button class="filter-btn" onclick="filterKat('Beras Ketan',this)">🌾 Beras Ketan</button>
+        <button class="filter-btn" onclick="filterKat('Ubi Jalar',this)">🍠 Ubi Jalar</button>
+        <button class="filter-btn" onclick="filterKat('Ubi Kayu',this)">🟤 Ubi Kayu</button>
+        <button class="filter-btn" onclick="filterKat('Beras Merah',this)">🌿 Beras Merah</button>
+      </div>
+      <div style="display:flex;gap:.6rem;align-items:center">
+        <div class="search-box"><span>🔍</span><input id="search-input" placeholder="Cari produk..." oninput="renderProducts()"/></div>
+        <div class="view-toggle">
+          <button class="vt-btn active" id="vt-grid" onclick="setView('grid',this)">⊞</button>
+          <button class="vt-btn" id="vt-list" onclick="setView('list',this)">☰</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div id="prod-container" class="prod-grid reveal"></div>
+
+    <!-- Pagination -->
+    <div class="pagination reveal">
+      <button class="pg-btn">←</button>
+      <button class="pg-btn active">1</button>
+      <button class="pg-btn">2</button>
+      <button class="pg-btn">3</button>
+      <button class="pg-btn">→</button>
+      <span class="pg-info">Menampilkan 6 dari 52 produk</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TAMBAH/EDIT PRODUK -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Tambah Produk Baru</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Nama Produk</label>
+        <input type="text" id="f-name" placeholder="Nama produk"/>
+      </div>
+      <div class="form-field">
+        <label>Kategori</label>
+        <select id="f-kat">
+          <option>Beras Putih</option><option>Beras Ketan</option>
+          <option>Ubi Jalar</option><option>Ubi Kayu</option><option>Beras Merah</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Deskripsi</label>
+      <textarea id="f-desc" placeholder="Deskripsi singkat produk..."></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Harga (Rp)</label>
+        <input type="number" id="f-price" placeholder="65000"/>
+      </div>
+      <div class="form-field">
+        <label>Satuan</label>
+        <select id="f-unit">
+          <option>kg</option><option>5 kg</option><option>10 kg</option>
+          <option>25 kg</option><option>50 kg</option><option>ikat</option><option>pcs</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label>Stok</label>
+        <input type="number" id="f-stock" placeholder="100"/>
+      </div>
+      <div class="form-field">
+        <label>Mitra</label>
+        <select id="f-mitra">
+          <option>Mitra Pak Hendra</option><option>Mitra Bu Siti</option>
+          <option>Mitra Pak Darto</option><option>Mitra CV Agri</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-field">
+      <label>Status</label>
+      <select id="f-status"><option>Aktif</option><option>Nonaktif</option></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+      <button class="btn btn-primary" onclick="saveProduct()">💾 Simpan Produk</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const allProducts = [
+  {emoji:'🍚',cat:'Beras Putih',name:'Beras Pandan Wangi',var:'Premium • Pulen',mitra:'Mitra Pak Hendra',price:'Rp 65.000',unit:'/5 kg',stock:120,bg:'#FFF8E8',status:'aktif'},
+  {emoji:'🌾',cat:'Beras Ketan',name:'Beras Ketan Putih',var:'Super • Lengket',mitra:'Mitra Bu Siti',price:'Rp 28.000',unit:'/kg',stock:8,bg:'#F0F8E8',status:'stok menipis'},
+  {emoji:'🍠',cat:'Ubi Jalar',name:'Ubi Jalar Merah',var:'Manis • Segar',mitra:'Mitra Pak Darto',price:'Rp 8.000',unit:'/kg',stock:200,bg:'#FFF0E8',status:'aktif'},
+  {emoji:'🌿',cat:'Beras Merah',name:'Beras Merah Organik',var:'Organik • Sehat',mitra:'Mitra CV Agri',price:'Rp 22.000',unit:'/kg',stock:5,bg:'#F0F5E8',status:'stok menipis'},
+  {emoji:'🟤',cat:'Ubi Kayu',name:'Singkong Segar',var:'Lokal • Manis',mitra:'Mitra Pak Budi',price:'Rp 5.000',unit:'/kg',stock:300,bg:'#F5EDE0',status:'aktif'},
+  {emoji:'🍚',cat:'Beras Ketan',name:'Beras Ketan Hitam',var:'Spesial • Kue & Bubur',mitra:'Mitra Bu Dewi',price:'Rp 32.000',unit:'/kg',stock:0,bg:'#F0EEF8',status:'nonaktif'},
+];
+
+let currentKat = 'semua';
+let currentView = 'grid';
+
+function filterKat(kat, btn) {
+  currentKat = kat;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts();
+}
+
+function setView(v, btn) {
+  currentView = v;
+  document.querySelectorAll('.vt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const c = document.getElementById('prod-container');
+  c.className = v === 'grid' ? 'prod-grid reveal visible' : 'table-wrap reveal visible';
+  renderProducts();
+}
+
+function renderProducts() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const filtered = allProducts.filter(p =>
+    (currentKat === 'semua' || p.cat === currentKat) &&
+    p.name.toLowerCase().includes(q)
+  );
+  const c = document.getElementById('prod-container');
+  if (currentView === 'grid') {
+    c.innerHTML = filtered.map((p,i) => `
+      <div class="prod-card">
+        <div class="prod-thumb" style="background:${p.bg}">
+          ${p.emoji}
+          <span class="prod-stock-badge ${p.status==='aktif'?'badge-green':p.status==='stok menipis'?'badge-gold':'badge-red'}">${p.status}</span>
+        </div>
+        <div class="prod-body">
+          <div class="prod-cat">${p.cat}</div>
+          <div class="prod-name">${p.name}</div>
+          <div class="prod-mitra">🤝 ${p.mitra} • Stok: <strong>${p.stock}</strong></div>
+          <div class="prod-footer">
+            <div><div class="prod-price">${p.price}</div><div class="prod-unit">${p.unit}</div></div>
+            <div class="prod-actions">
+              <button class="btn btn-outline btn-icon btn-sm" onclick="editProduct(${i})" title="Edit">✏️</button>
+              <button class="btn btn-red btn-icon btn-sm" onclick="deleteProduct(this)" title="Hapus">🗑️</button>
+            </div>
+          </div>
+        </div>
+      </div>`).join('');
+  } else {
+    c.innerHTML = `
+      <div class="table-header"><div class="table-title">Daftar Produk</div></div>
+      <table><thead><tr><th>Produk</th><th>Kategori</th><th>Harga</th><th>Stok</th><th>Mitra</th><th>Status</th><th>Aksi</th></tr></thead>
+      <tbody>${filtered.map((p,i) => `<tr>
+        <td><div style="display:flex;align-items:center;gap:.6rem"><span style="font-size:1.5rem">${p.emoji}</span>${p.name}</div></td>
+        <td>${p.cat}</td>
+        <td style="font-weight:600">${p.price}${p.unit}</td>
+        <td>${p.stock}</td>
+        <td style="font-size:.8rem">${p.mitra}</td>
+        <td><span class="badge ${p.status==='aktif'?'badge-green':p.status==='stok menipis'?'badge-gold':'badge-red'}">${p.status}</span></td>
+        <td><div style="display:flex;gap:.4rem">
+          <button class="btn btn-outline btn-sm" onclick="editProduct(${i})">✏️ Edit</button>
+          <button class="btn btn-red btn-sm" onclick="deleteProduct(this)">🗑️</button>
+        </div></td>
+      </tr>`).join('')}</tbody></table>`;
+  }
+}
+
+function editProduct(i) {
+  const p = allProducts[i];
+  document.getElementById('modal-title').textContent = 'Edit Produk';
+  document.getElementById('f-name').value = p.name;
+  document.getElementById('f-price').value = p.price.replace(/\D/g,'');
+  document.getElementById('f-stock').value = p.stock;
+  openModal();
+}
+
+function deleteProduct(btn) {
+  if(confirm('Hapus produk ini?')) btn.closest('.prod-card, tr').remove();
+}
+
+function openModal() { document.getElementById('modal').classList.add('show'); }
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+function saveProduct() {
+  alert('Produk berhasil disimpan!');
+  closeModal();
+}
+
+renderProducts();
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach((e,i) => { if(e.isIntersecting){ setTimeout(()=>e.target.classList.add('visible'),i*80); obs.unobserve(e.target); } });
+}, {threshold:.1});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

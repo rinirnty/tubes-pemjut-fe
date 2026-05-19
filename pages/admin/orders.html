@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kelola Pesanan — PanenKu Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../assets/css/admin-shared.css">
+  <style>
+    .order-detail { display:none; }
+    .timeline { position:relative; padding-left:1.5rem; }
+    .timeline::before { content:''; position:absolute; left:6px; top:6px; bottom:6px; width:2px; background:var(--cream2); }
+    .tl-item { position:relative; padding-bottom:1.25rem; display:flex; align-items:flex-start; gap:.75rem; }
+    .tl-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; margin-left:-1.5rem; margin-top:2px; border:2px solid #fff; }
+    .tl-dot.done { background:var(--green); }
+    .tl-dot.current { background:var(--gold); }
+    .tl-dot.pending { background:var(--cream2); border-color:var(--border); }
+    .tl-title { font-size:.85rem; font-weight:600; color:var(--text); }
+    .tl-time { font-size:.72rem; color:var(--muted); margin-top:.15rem; }
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo"><a href="../../../index.html">🌾 Panen<span>Ku</span></a></div>
+  <div class="sidebar-role">Admin Panel</div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+    <a href="products.html" class="nav-item"><span class="nav-icon">🌾</span> Produk</a>
+    <a href="orders.html" class="nav-item active"><span class="nav-icon">📦</span> Pesanan <span class="nav-badge">12</span></a>
+    <a href="clients.html" class="nav-item"><span class="nav-icon">👥</span> Pengguna</a>
+    <a href="reports.html" class="nav-item"><span class="nav-icon">📈</span> Laporan</a>
+    <div class="sidebar-divider"></div>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙️</span> Pengaturan</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-profile">
+      <div class="admin-avatar">👨‍💼</div>
+      <div><div class="admin-name">Admin PanenKu</div><div class="admin-email">admin@panenku.com</div></div>
+      <button class="btn-logout" onclick="window.location.href='../../auth/login.html'">🚪</button>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div><div class="page-title">Kelola Pesanan</div><div class="breadcrumb">Admin / Pesanan</div></div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-outline btn-sm">📥 Export CSV</button>
+      <div class="topbar-btn">🔔<div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <!-- Stat -->
+    <div class="stat-grid reveal">
+      <div class="stat-card"><div class="stat-icon" style="background:#FFF8E0">⏳</div><div><div class="stat-value">12</div><div class="stat-label">Pending</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#E0F0FF">🔄</div><div><div class="stat-value">28</div><div class="stat-label">Diproses</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#EAF3DE">🚚</div><div><div class="stat-value">15</div><div class="stat-label">Dikirim</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#EAF6EA">✅</div><div><div class="stat-value">229</div><div class="stat-label">Selesai</div></div></div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-bar reveal">
+      <button class="filter-btn active" onclick="filterStatus('semua',this)">Semua (284)</button>
+      <button class="filter-btn" onclick="filterStatus('pending',this)">⏳ Pending (12)</button>
+      <button class="filter-btn" onclick="filterStatus('diproses',this)">🔄 Diproses (28)</button>
+      <button class="filter-btn" onclick="filterStatus('dikirim',this)">🚚 Dikirim (15)</button>
+      <button class="filter-btn" onclick="filterStatus('selesai',this)">✅ Selesai (229)</button>
+      <button class="filter-btn" onclick="filterStatus('dibatalkan',this)">✕ Dibatalkan</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap reveal">
+      <div class="table-header">
+        <div class="table-title">Daftar Pesanan</div>
+        <div class="table-actions">
+          <div class="search-box"><span>🔍</span><input id="search-order" placeholder="Cari invoice/pembeli..." oninput="renderOrders()"/></div>
+        </div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Invoice</th><th>Pembeli</th><th>Produk</th><th>Mitra</th><th>Total</th><th>Bayar</th><th>Status</th><th>Tgl</th><th>Aksi</th>
+        </tr></thead>
+        <tbody id="orders-tbody"></tbody>
+      </table>
+      <div class="pagination">
+        <button class="pg-btn">←</button>
+        <button class="pg-btn active">1</button>
+        <button class="pg-btn">2</button>
+        <button class="pg-btn">3</button>
+        <button class="pg-btn">→</button>
+        <span class="pg-info">Menampilkan 10 dari 284 pesanan</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL PESANAN -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <div class="modal-title" id="detail-inv">Detail Pesanan</div>
+      <button class="modal-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div id="detail-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeDetail()">Tutup</button>
+      <button class="btn btn-primary" id="btn-next-status" onclick="nextStatus()">🔄 Update Status</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const orders = [
+  {inv:'#INV-0284',buyer:'Ibu Ratna',phone:'081234567890',product:'Beras Pandan Wangi 5kg x2',mitra:'Pak Hendra',total:'Rp 130.000',pay:'lunas',status:'selesai',tgl:'19 Mei 2025',addr:'Jl. Merdeka No.5 Bandung'},
+  {inv:'#INV-0283',buyer:'Pak Darto',phone:'082345678901',product:'Ubi Jalar Merah 10kg',mitra:'Pak Darto',total:'Rp 80.000',pay:'lunas',status:'dikirim',tgl:'19 Mei 2025',addr:'Jl. Sudirman No.12 Bandung'},
+  {inv:'#INV-0282',buyer:'Bu Siti',phone:'083456789012',product:'Beras Ketan Putih 3kg',mitra:'Bu Siti',total:'Rp 84.000',pay:'lunas',status:'diproses',tgl:'18 Mei 2025',addr:'Jl. Asia Afrika No.3 Bandung'},
+  {inv:'#INV-0281',buyer:'Pak Budi',phone:'084567890123',product:'Singkong Segar 20kg',mitra:'Pak Budi',total:'Rp 100.000',pay:'belum bayar',status:'pending',tgl:'18 Mei 2025',addr:'Jl. Braga No.8 Bandung'},
+  {inv:'#INV-0280',buyer:'CV Maju',phone:'085678901234',product:'Beras IR64 50kg x2',mitra:'Bu Dewi',total:'Rp 540.000',pay:'lunas',status:'selesai',tgl:'17 Mei 2025',addr:'Jl. Pasteur No.20 Bandung'},
+  {inv:'#INV-0279',buyer:'Bu Lestari',phone:'086789012345',product:'Beras Merah Organik 5kg',mitra:'CV Agri',total:'Rp 110.000',pay:'lunas',status:'dikirim',tgl:'17 Mei 2025',addr:'Jl. Cihampelas No.15 Bandung'},
+  {inv:'#INV-0278',buyer:'Pak Ahmad',phone:'087890123456',product:'Beras Ketan Hitam 2kg',mitra:'Bu Dewi',total:'Rp 64.000',pay:'lunas',status:'selesai',tgl:'16 Mei 2025',addr:'Jl. Dago No.7 Bandung'},
+  {inv:'#INV-0277',buyer:'Ibu Dewi',phone:'088901234567',product:'Ubi Kayu 15kg',mitra:'Pak Budi',total:'Rp 75.000',pay:'belum bayar',status:'dibatalkan',tgl:'16 Mei 2025',addr:'Jl. Lombok No.2 Bandung'},
+];
+
+const sbadge = {selesai:'badge-green',dikirim:'badge-blue',diproses:'badge-gold',pending:'badge-gray',dibatalkan:'badge-red'};
+const pbadge = {lunas:'badge-green','belum bayar':'badge-red'};
+let filterSt = 'semua';
+let selectedOrder = null;
+
+function filterStatus(st, btn) {
+  filterSt = st;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderOrders();
+}
+
+function renderOrders() {
+  const q = document.getElementById('search-order').value.toLowerCase();
+  const filtered = orders.filter(o =>
+    (filterSt==='semua'||o.status===filterSt) &&
+    (o.inv.toLowerCase().includes(q)||o.buyer.toLowerCase().includes(q))
+  );
+  const tbody = document.getElementById('orders-tbody');
+  tbody.innerHTML = filtered.length === 0
+    ? `<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--muted)">Tidak ada pesanan</td></tr>`
+    : filtered.map((o,i) => `<tr>
+        <td><span style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--brown)">${o.inv}</span></td>
+        <td><div style="display:flex;align-items:center;gap:.5rem"><div class="avatar" style="background:var(--cream2);font-size:.75rem">${o.buyer[0]}</div>${o.buyer}</div></td>
+        <td style="font-size:.8rem;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.product}</td>
+        <td style="font-size:.8rem">${o.mitra}</td>
+        <td style="font-weight:600">${o.total}</td>
+        <td><span class="badge ${pbadge[o.pay]}">${o.pay}</span></td>
+        <td><span class="badge ${sbadge[o.status]}">${o.status}</span></td>
+        <td style="font-size:.78rem;color:var(--muted)">${o.tgl}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="showDetail(${i})">Detail</button></td>
+      </tr>`).join('');
+}
+
+function showDetail(i) {
+  selectedOrder = i;
+  const o = orders[i];
+  document.getElementById('detail-inv').textContent = `Detail ${o.inv}`;
+  const statusFlow = ['pending','diproses','dikirim','selesai'];
+  const curIdx = statusFlow.indexOf(o.status);
+
+  document.getElementById('detail-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
+      <div><div style="font-size:.75rem;color:var(--muted);margin-bottom:.25rem">Pembeli</div><div style="font-weight:600">${o.buyer}</div><div style="font-size:.8rem;color:var(--muted)">${o.phone}</div></div>
+      <div><div style="font-size:.75rem;color:var(--muted);margin-bottom:.25rem">Alamat</div><div style="font-size:.85rem">${o.addr}</div></div>
+      <div><div style="font-size:.75rem;color:var(--muted);margin-bottom:.25rem">Mitra</div><div style="font-weight:600">${o.mitra}</div></div>
+      <div><div style="font-size:.75rem;color:var(--muted);margin-bottom:.25rem">Total</div><div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--brown)">${o.total}</div></div>
+    </div>
+    <div style="background:var(--cream);border-radius:12px;padding:1rem;margin-bottom:1.25rem">
+      <div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem">Produk</div>
+      <div style="font-weight:500">${o.product}</div>
+    </div>
+    <div style="font-weight:600;font-size:.88rem;margin-bottom:.75rem;color:var(--text)">Status Pengiriman</div>
+    <div class="timeline">
+      ${statusFlow.map((s,si) => `
+        <div class="tl-item">
+          <div class="tl-dot ${si<curIdx?'done':si===curIdx?'current':'pending'}"></div>
+          <div>
+            <div class="tl-title" style="color:${si<=curIdx?'var(--text)':'var(--muted)'}">${['Pesanan Diterima','Sedang Diproses','Sedang Dikirim','Pesanan Selesai'][si]}</div>
+            <div class="tl-time">${si<=curIdx?o.tgl:'Menunggu'}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+
+  const nextBtn = document.getElementById('btn-next-status');
+  if (o.status === 'selesai' || o.status === 'dibatalkan') {
+    nextBtn.style.display = 'none';
+  } else {
+    nextBtn.style.display = 'flex';
+    const nextSt = statusFlow[curIdx+1];
+    nextBtn.textContent = `→ Tandai ${nextSt}`;
+  }
+  document.getElementById('modal-detail').classList.add('show');
+}
+
+function nextStatus() {
+  const o = orders[selectedOrder];
+  const flow = ['pending','diproses','dikirim','selesai'];
+  const idx = flow.indexOf(o.status);
+  if (idx < flow.length-1) {
+    orders[selectedOrder].status = flow[idx+1];
+    renderOrders();
+    showDetail(selectedOrder);
+  }
+}
+
+function closeDetail() { document.getElementById('modal-detail').classList.remove('show'); }
+
+renderOrders();
+const obs = new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('visible'),i*80);obs.unobserve(e.target);}});},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

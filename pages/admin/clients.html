@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kelola Pengguna — PanenKu Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../assets/css/admin-shared.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo"><a href="../../../index.html">🌾 Panen<span>Ku</span></a></div>
+  <div class="sidebar-role">Admin Panel</div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+    <a href="products.html" class="nav-item"><span class="nav-icon">🌾</span> Produk</a>
+    <a href="orders.html" class="nav-item"><span class="nav-icon">📦</span> Pesanan <span class="nav-badge">12</span></a>
+    <a href="clients.html" class="nav-item active"><span class="nav-icon">👥</span> Pengguna</a>
+    <a href="reports.html" class="nav-item"><span class="nav-icon">📈</span> Laporan</a>
+    <div class="sidebar-divider"></div>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙️</span> Pengaturan</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-profile">
+      <div class="admin-avatar">👨‍💼</div>
+      <div><div class="admin-name">Admin PanenKu</div><div class="admin-email">admin@panenku.com</div></div>
+      <button class="btn-logout" onclick="window.location.href='../../auth/login.html'">🚪</button>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div><div class="page-title">Kelola Pengguna</div><div class="breadcrumb">Admin / Pengguna</div></div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-outline btn-sm">📥 Export</button>
+      <div class="topbar-btn">🔔<div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <!-- Stats -->
+    <div class="stat-grid reveal">
+      <div class="stat-card"><div class="stat-icon" style="background:#E0F0FF">👥</div><div><div class="stat-value">1.240</div><div class="stat-label">Total Pengguna</div><div class="stat-change up">▲ 24 baru minggu ini</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#EAF3DE">🤝</div><div><div class="stat-value">83</div><div class="stat-label">Mitra Aktif</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FFF8E0">⏳</div><div><div class="stat-value">3</div><div class="stat-label">Mitra Pending</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FDECEA">🚫</div><div><div class="stat-value">5</div><div class="stat-label">Akun Diblokir</div></div></div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap" class="reveal">
+      <button class="filter-btn active" onclick="switchTab('semua',this)">Semua Pengguna</button>
+      <button class="filter-btn" onclick="switchTab('pembeli',this)">🛒 Pembeli</button>
+      <button class="filter-btn" onclick="switchTab('mitra',this)">🤝 Mitra</button>
+      <button class="filter-btn" onclick="switchTab('pending',this)">⏳ Pending Verifikasi</button>
+      <button class="filter-btn" onclick="switchTab('blokir',this)">🚫 Diblokir</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap reveal">
+      <div class="table-header">
+        <div class="table-title" id="tab-title">Semua Pengguna</div>
+        <div class="table-actions">
+          <div class="search-box"><span>🔍</span><input id="search-user" placeholder="Cari nama/email..." oninput="renderUsers()"/></div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Pengguna</th><th>Role</th><th>No HP</th><th>Bergabung</th><th>Pesanan</th><th>Status</th><th>Aksi</th></tr></thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+      <div class="pagination">
+        <button class="pg-btn">←</button>
+        <button class="pg-btn active">1</button>
+        <button class="pg-btn">2</button>
+        <button class="pg-btn">→</button>
+        <span class="pg-info" id="pg-info"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL USER -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title" id="user-modal-title">Detail Pengguna</div>
+      <button class="modal-close" onclick="closeUserModal()">✕</button>
+    </div>
+    <div id="user-modal-content"></div>
+    <div class="modal-footer" id="user-modal-footer"></div>
+  </div>
+</div>
+
+<script>
+const users = [
+  {name:'Ibu Ratna Wulandari',email:'ratna@email.com',phone:'081234567890',role:'pembeli',joined:'10 Jan 2025',orders:24,status:'aktif',avatar:'👩'},
+  {name:'Pak Darmawan',email:'darmawan@email.com',phone:'082345678901',role:'mitra',toko:'Toko Makmur Jaya',joined:'5 Feb 2025',orders:0,status:'aktif',komisi:'Rp 2.4jt',avatar:'👨‍💼'},
+  {name:'Bu Siti Aminah',email:'siti@email.com',phone:'083456789012',role:'pembeli',joined:'20 Feb 2025',orders:8,status:'aktif',avatar:'👩‍💼'},
+  {name:'Pak Hendra Wijaya',email:'hendra@email.com',phone:'084567890123',role:'mitra',toko:'UD Hendra Pangan',joined:'1 Mar 2025',orders:0,status:'aktif',komisi:'Rp 4.1jt',avatar:'👨'},
+  {name:'CV Agri Nusantara',email:'agri@email.com',phone:'085678901234',role:'mitra',toko:'CV Agri Nusantara',joined:'15 Mar 2025',orders:0,status:'aktif',komisi:'Rp 1.8jt',avatar:'🏢'},
+  {name:'Pak Budi Santoso',email:'budi@email.com',phone:'086789012345',role:'pembeli',joined:'2 Apr 2025',orders:3,status:'aktif',avatar:'👨'},
+  {name:'Toko Sumber Makmur',email:'sumber@email.com',phone:'087890123456',role:'mitra',toko:'Toko Sumber Makmur',joined:'18 Mei 2025',orders:0,status:'pending',komisi:'Rp 0',avatar:'🏪'},
+  {name:'UD Berkah Pangan',email:'berkah@email.com',phone:'088901234567',role:'mitra',toko:'UD Berkah Pangan',joined:'19 Mei 2025',orders:0,status:'pending',komisi:'Rp 0',avatar:'🏬'},
+  {name:'Toko Jaya Abadi',email:'jaya@email.com',phone:'089012345678',role:'mitra',toko:'Toko Jaya Abadi',joined:'19 Mei 2025',orders:0,status:'pending',komisi:'Rp 0',avatar:'🏪'},
+  {name:'Akun Spam',email:'spam@email.com',phone:'-',role:'pembeli',joined:'10 Mei 2025',orders:0,status:'blokir',avatar:'🚫'},
+];
+
+const rbadge = {pembeli:'badge-blue',mitra:'badge-brown'};
+const sbadge = {aktif:'badge-green',pending:'badge-gold',blokir:'badge-red'};
+let currentTab = 'semua';
+let selectedUser = null;
+
+function switchTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const titles = {semua:'Semua Pengguna',pembeli:'Pembeli',mitra:'Mitra',pending:'Pending Verifikasi',blokir:'Diblokir'};
+  document.getElementById('tab-title').textContent = titles[tab];
+  renderUsers();
+}
+
+function renderUsers() {
+  const q = document.getElementById('search-user').value.toLowerCase();
+  const filtered = users.filter(u => {
+    const tabOk = currentTab==='semua'||(currentTab==='pending'?u.status==='pending':currentTab==='blokir'?u.status==='blokir':u.role===currentTab);
+    const qOk = u.name.toLowerCase().includes(q)||u.email.toLowerCase().includes(q);
+    return tabOk && qOk;
+  });
+  document.getElementById('pg-info').textContent = `Menampilkan ${filtered.length} pengguna`;
+  document.getElementById('users-tbody').innerHTML = filtered.length===0
+    ? `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--muted)">Tidak ada pengguna</td></tr>`
+    : filtered.map((u,i) => `<tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:.65rem">
+            <div class="avatar" style="background:var(--cream2)">${u.avatar}</div>
+            <div>
+              <div style="font-weight:600;font-size:.88rem">${u.name}</div>
+              <div style="font-size:.75rem;color:var(--muted)">${u.email}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="badge ${rbadge[u.role]}">${u.role}${u.toko?': '+u.toko:''}</span></td>
+        <td style="font-size:.82rem">${u.phone}</td>
+        <td style="font-size:.78rem;color:var(--muted)">${u.joined}</td>
+        <td style="text-align:center">${u.role==='mitra'?`<span style="font-size:.8rem;color:var(--green)">${u.komisi}</span>`:u.orders}</td>
+        <td><span class="badge ${sbadge[u.status]}">${u.status}</span></td>
+        <td>
+          <div style="display:flex;gap:.35rem">
+            <button class="btn btn-outline btn-sm" onclick="showUser(${users.indexOf(u)})">Detail</button>
+            ${u.status==='pending'?`<button class="btn btn-green btn-sm" onclick="verifUser(${users.indexOf(u)},this)">✓</button><button class="btn btn-red btn-sm" onclick="tolakUser(${users.indexOf(u)},this)">✕</button>`:''}
+            ${u.status==='aktif'?`<button class="btn btn-red btn-sm" onclick="blokirUser(${users.indexOf(u)},this)">🚫</button>`:''}
+            ${u.status==='blokir'?`<button class="btn btn-outline btn-sm" onclick="aktifUser(${users.indexOf(u)},this)">✓ Aktifkan</button>`:''}
+          </div>
+        </td>
+      </tr>`).join('');
+}
+
+function showUser(i) {
+  selectedUser = i;
+  const u = users[i];
+  document.getElementById('user-modal-title').textContent = u.name;
+  document.getElementById('user-modal-content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding:1rem;background:var(--cream);border-radius:12px">
+      <div style="width:56px;height:56px;border-radius:50%;background:var(--cream2);display:flex;align-items:center;justify-content:center;font-size:2rem">${u.avatar}</div>
+      <div>
+        <div style="font-weight:700;font-size:1rem">${u.name}</div>
+        <div style="font-size:.82rem;color:var(--muted)">${u.email}</div>
+        <span class="badge ${rbadge[u.role]}" style="margin-top:.3rem">${u.role}</span>
+        <span class="badge ${sbadge[u.status]}" style="margin-top:.3rem;margin-left:.3rem">${u.status}</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem">
+      <div style="padding:.85rem;background:var(--cream);border-radius:10px">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">No HP</div>
+        <div style="font-weight:600;font-size:.88rem">${u.phone}</div>
+      </div>
+      <div style="padding:.85rem;background:var(--cream);border-radius:10px">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">Bergabung</div>
+        <div style="font-weight:600;font-size:.88rem">${u.joined}</div>
+      </div>
+      ${u.role==='mitra'?`
+      <div style="padding:.85rem;background:var(--cream);border-radius:10px">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">Nama Toko</div>
+        <div style="font-weight:600;font-size:.88rem">${u.toko}</div>
+      </div>
+      <div style="padding:.85rem;background:var(--cream);border-radius:10px">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">Total Komisi</div>
+        <div style="font-weight:700;font-size:.95rem;color:var(--green)">${u.komisi}</div>
+      </div>`:
+      `<div style="padding:.85rem;background:var(--cream);border-radius:10px">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">Total Pesanan</div>
+        <div style="font-weight:600;font-size:.88rem">${u.orders} pesanan</div>
+      </div>`}
+    </div>`;
+  const footer = document.getElementById('user-modal-footer');
+  footer.innerHTML = `<button class="btn btn-outline" onclick="closeUserModal()">Tutup</button>
+    ${u.status==='pending'?`<button class="btn btn-red" onclick="tolakUserModal()">✕ Tolak</button><button class="btn btn-green" onclick="verifUserModal()">✓ Verifikasi</button>`:''}
+    ${u.status==='aktif'?`<button class="btn btn-red" onclick="blokirUserModal()">🚫 Blokir</button>`:''}
+    ${u.status==='blokir'?`<button class="btn btn-primary" onclick="aktifUserModal()">✓ Aktifkan</button>`:''}`;
+  document.getElementById('modal-user').classList.add('show');
+}
+
+function verifUserModal()  { users[selectedUser].status='aktif'; closeUserModal(); renderUsers(); }
+function tolakUserModal()  { users[selectedUser].status='blokir'; closeUserModal(); renderUsers(); }
+function blokirUserModal() { users[selectedUser].status='blokir'; closeUserModal(); renderUsers(); }
+function aktifUserModal()  { users[selectedUser].status='aktif'; closeUserModal(); renderUsers(); }
+
+function verifUser(i,btn) { users[i].status='aktif'; renderUsers(); }
+function tolakUser(i,btn) { users[i].status='blokir'; renderUsers(); }
+function blokirUser(i,btn){ users[i].status='blokir'; renderUsers(); }
+function aktifUser(i,btn) { users[i].status='aktif'; renderUsers(); }
+
+function closeUserModal() { document.getElementById('modal-user').classList.remove('show'); }
+
+renderUsers();
+const obs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('visible'),i*80);obs.unobserve(e.target);}});},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

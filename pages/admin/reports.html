@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Laporan — PanenKu Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../assets/css/admin-shared.css">
+  <style>
+    .chart-wrap{background:#fff;border-radius:16px;border:1px solid var(--border);padding:1.5rem;}
+    .chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:.75rem;}
+    .bar-chart-h{display:flex;flex-direction:column;gap:.6rem;}
+    .bh-row{display:flex;align-items:center;gap:.85rem;}
+    .bh-label{font-size:.8rem;color:var(--muted);width:110px;text-align:right;flex-shrink:0;}
+    .bh-bar-wrap{flex:1;background:var(--cream2);border-radius:99px;height:22px;overflow:hidden;}
+    .bh-bar{height:100%;border-radius:99px;transition:width .8s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:.5rem;}
+    .bh-val{font-size:.72rem;font-weight:600;color:#fff;white-space:nowrap;}
+
+    .line-chart{height:160px;position:relative;overflow:hidden;}
+    .lc-svg{width:100%;height:100%;}
+
+    .komisi-item{display:flex;align-items:center;justify-content:space-between;padding:.85rem 0;border-bottom:1px solid var(--border);}
+    .komisi-item:last-child{border-bottom:none;}
+    .komisi-left{display:flex;align-items:center;gap:.75rem;}
+    .komisi-amount{font-family:'DM Mono',monospace;font-size:.88rem;font-weight:600;color:var(--green);}
+    .komisi-status{font-size:.72rem;color:var(--muted);}
+
+    .period-selector{display:flex;gap:.4rem;}
+    .period-btn{padding:.35rem .8rem;border-radius:8px;border:1px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:all .2s;}
+    .period-btn.active{background:var(--brown);color:#fff;border-color:var(--brown);}
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo"><a href="../../../index.html">🌾 Panen<span>Ku</span></a></div>
+  <div class="sidebar-role">Admin Panel</div>
+  <nav class="sidebar-nav">
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span> Dashboard</a>
+    <a href="products.html" class="nav-item"><span class="nav-icon">🌾</span> Produk</a>
+    <a href="orders.html" class="nav-item"><span class="nav-icon">📦</span> Pesanan <span class="nav-badge">12</span></a>
+    <a href="clients.html" class="nav-item"><span class="nav-icon">👥</span> Pengguna</a>
+    <a href="reports.html" class="nav-item active"><span class="nav-icon">📈</span> Laporan</a>
+    <div class="sidebar-divider"></div>
+    <a href="#" class="nav-item"><span class="nav-icon">⚙️</span> Pengaturan</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="admin-profile">
+      <div class="admin-avatar">👨‍💼</div>
+      <div><div class="admin-name">Admin PanenKu</div><div class="admin-email">admin@panenku.com</div></div>
+      <button class="btn-logout" onclick="window.location.href='../../auth/login.html'">🚪</button>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div><div class="page-title">Laporan</div><div class="breadcrumb">Admin / Laporan</div></div>
+    </div>
+    <div class="topbar-right">
+      <div class="period-selector">
+        <button class="period-btn" onclick="setPeriod('minggu',this)">Minggu</button>
+        <button class="period-btn active" onclick="setPeriod('bulan',this)">Bulan</button>
+        <button class="period-btn" onclick="setPeriod('tahun',this)">Tahun</button>
+      </div>
+      <button class="btn btn-outline btn-sm">📥 Export PDF</button>
+      <div class="topbar-btn">🔔<div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- Summary -->
+    <div class="stat-grid reveal">
+      <div class="stat-card"><div class="stat-icon" style="background:#EAF3DE">💰</div><div><div class="stat-value">Rp 48,2jt</div><div class="stat-label">Pendapatan Bulan Ini</div><div class="stat-change up">▲ 12% vs bulan lalu</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FFF0E0">🤝</div><div><div class="stat-value">Rp 9,6jt</div><div class="stat-label">Total Komisi Mitra</div><div class="stat-change up">▲ 8% vs bulan lalu</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#E0F0FF">📦</div><div><div class="stat-value">284</div><div class="stat-label">Pesanan Selesai</div><div class="stat-change up">▲ 35 vs bulan lalu</div></div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#F5EDE0">🌾</div><div><div class="stat-value">Rp 38,6jt</div><div class="stat-label">Pendapatan Bersih</div><div class="stat-change up">▲ 14% vs bulan lalu</div></div></div>
+    </div>
+
+    <div class="grid-2 reveal" style="margin-bottom:1.25rem">
+      <!-- Grafik Pendapatan Bulanan -->
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <div class="section-title" style="margin:0">Pendapatan per Bulan (2025)</div>
+        </div>
+        <div class="bar-chart-h" id="monthly-chart"></div>
+      </div>
+
+      <!-- Top Produk -->
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <div class="section-title" style="margin:0">Produk Terlaris</div>
+        </div>
+        <div class="bar-chart-h" id="top-products"></div>
+      </div>
+    </div>
+
+    <div class="grid-2 reveal" style="margin-bottom:1.25rem">
+      <!-- Komisi Mitra -->
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <div class="section-title" style="margin:0">Komisi Mitra Bulan Ini</div>
+          <a href="clients.html" class="btn btn-outline btn-sm">Lihat Semua</a>
+        </div>
+        <div id="komisi-list"></div>
+      </div>
+
+      <!-- Ringkasan Transaksi -->
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <div class="section-title" style="margin:0">Ringkasan Transaksi</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
+          <div style="background:var(--cream);border-radius:12px;padding:1rem;text-align:center">
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:.3rem">Total Transaksi</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--brown)">284</div>
+          </div>
+          <div style="background:var(--cream);border-radius:12px;padding:1rem;text-align:center">
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:.3rem">Rata-rata/Transaksi</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--green)">Rp 170rb</div>
+          </div>
+          <div style="background:var(--cream);border-radius:12px;padding:1rem;text-align:center">
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:.3rem">Lunas</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--green)">271</div>
+          </div>
+          <div style="background:var(--cream);border-radius:12px;padding:1rem;text-align:center">
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:.3rem">Dibatalkan</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--red)">13</div>
+          </div>
+        </div>
+        <div style="background:var(--cream);border-radius:12px;padding:1rem">
+          <div style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem;font-weight:600">Metode Pembayaran</div>
+          <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.4rem"><span>QRIS</span><span style="font-weight:600;color:var(--green)">91%</span></div>
+          <div style="height:8px;background:var(--cream2);border-radius:99px;overflow:hidden;margin-bottom:.6rem"><div style="width:91%;height:100%;background:var(--green);border-radius:99px"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:.4rem"><span>Transfer Bank</span><span style="font-weight:600;color:var(--blue)">9%</span></div>
+          <div style="height:8px;background:var(--cream2);border-radius:99px;overflow:hidden"><div style="width:9%;height:100%;background:var(--blue);border-radius:99px"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabel Laporan Transaksi -->
+    <div class="table-wrap reveal">
+      <div class="table-header">
+        <div class="table-title">Rincian Transaksi</div>
+        <div class="table-actions">
+          <div class="search-box"><span>🔍</span><input placeholder="Cari transaksi..."/></div>
+          <button class="btn btn-outline btn-sm">📥 Export CSV</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Invoice</th><th>Tanggal</th><th>Pembeli</th><th>Mitra</th><th>Produk</th><th>Total</th><th>Komisi</th><th>Status</th></tr></thead>
+        <tbody id="transaksi-tbody"></tbody>
+      </table>
+      <div class="pagination">
+        <button class="pg-btn">←</button>
+        <button class="pg-btn active">1</button>
+        <button class="pg-btn">2</button>
+        <button class="pg-btn">→</button>
+        <span class="pg-info">Menampilkan 8 dari 284 transaksi</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// MONTHLY CHART
+const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+const monthVals = [28,32,35,41,48,0,0,0,0,0,0,0];
+const maxM = Math.max(...monthVals.filter(v=>v>0));
+const mc = document.getElementById('monthly-chart');
+months.forEach((m,i) => {
+  if (monthVals[i] === 0) return;
+  const pct = (monthVals[i]/maxM*100).toFixed(0);
+  const colors = ['var(--brown2)','var(--brown2)','var(--brown2)','var(--brown2)','var(--green)'];
+  mc.innerHTML += `
+    <div class="bh-row">
+      <div class="bh-label">${m} 2025</div>
+      <div class="bh-bar-wrap">
+        <div class="bh-bar" style="width:${pct}%;background:${colors[i]||'var(--brown2)'}">
+          <span class="bh-val">Rp ${monthVals[i]}jt</span>
+        </div>
+      </div>
+    </div>`;
+});
+
+// TOP PRODUCTS
+const topProds = [
+  {name:'🍚 Beras Pandan Wangi',pct:40,color:'var(--brown)'},
+  {name:'🌾 Beras Ketan Putih',pct:24,color:'var(--green)'},
+  {name:'🍠 Ubi Jalar Merah',pct:16,color:'var(--gold)'},
+  {name:'🟤 Singkong Segar',pct:12,color:'var(--brown3)'},
+  {name:'🌿 Beras Merah',pct:8,color:'var(--green2)'},
+];
+const tp = document.getElementById('top-products');
+topProds.forEach(p => {
+  tp.innerHTML += `
+    <div class="bh-row">
+      <div class="bh-label" style="font-size:.75rem">${p.name}</div>
+      <div class="bh-bar-wrap">
+        <div class="bh-bar" style="width:${p.pct}%;background:${p.color}">
+          <span class="bh-val">${p.pct}%</span>
+        </div>
+      </div>
+    </div>`;
+});
+
+// KOMISI MITRA
+const komisis = [
+  {nama:'Pak Hendra',toko:'UD Hendra Pangan',amount:'Rp 4.100.000',status:'dibayar',avatar:'👨'},
+  {nama:'Bu Siti',toko:'Mitra Bu Siti',amount:'Rp 2.800.000',status:'dibayar',avatar:'👩'},
+  {nama:'Pak Darmawan',toko:'Toko Makmur Jaya',amount:'Rp 2.400.000',status:'pending',avatar:'👨‍💼'},
+  {nama:'CV Agri',toko:'CV Agri Nusantara',amount:'Rp 1.800.000',status:'dibayar',avatar:'🏢'},
+  {nama:'Pak Budi',toko:'Mitra Pak Budi',amount:'Rp 900.000',status:'pending',avatar:'👨'},
+];
+const kl = document.getElementById('komisi-list');
+komisis.forEach(k => {
+  kl.innerHTML += `
+    <div class="komisi-item">
+      <div class="komisi-left">
+        <div class="avatar" style="background:var(--cream2)">${k.avatar}</div>
+        <div>
+          <div style="font-weight:600;font-size:.87rem">${k.nama}</div>
+          <div style="font-size:.75rem;color:var(--muted)">${k.toko}</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="komisi-amount">${k.amount}</div>
+        <span class="badge ${k.status==='dibayar'?'badge-green':'badge-gold'}" style="margin-top:.2rem">${k.status}</span>
+      </div>
+    </div>`;
+});
+
+// TRANSAKSI TABLE
+const transaksis = [
+  {inv:'#INV-0284',tgl:'19 Mei 2025',buyer:'Ibu Ratna',mitra:'Pak Hendra',prod:'Beras Pandan 5kg x2',total:'Rp 130.000',komisi:'Rp 13.000',status:'selesai'},
+  {inv:'#INV-0283',tgl:'19 Mei 2025',buyer:'Pak Darto',mitra:'Pak Darto',prod:'Ubi Jalar 10kg',total:'Rp 80.000',komisi:'Rp 8.000',status:'dikirim'},
+  {inv:'#INV-0282',tgl:'18 Mei 2025',buyer:'Bu Siti',mitra:'Bu Siti',prod:'Beras Ketan 3kg',total:'Rp 84.000',komisi:'Rp 8.400',status:'diproses'},
+  {inv:'#INV-0281',tgl:'18 Mei 2025',buyer:'Pak Budi',mitra:'Pak Budi',prod:'Singkong 20kg',total:'Rp 100.000',komisi:'Rp 10.000',status:'pending'},
+  {inv:'#INV-0280',tgl:'17 Mei 2025',buyer:'CV Maju',mitra:'Bu Dewi',prod:'Beras IR64 50kg x2',total:'Rp 540.000',komisi:'Rp 54.000',status:'selesai'},
+  {inv:'#INV-0279',tgl:'17 Mei 2025',buyer:'Bu Lestari',mitra:'CV Agri',prod:'Beras Merah 5kg',total:'Rp 110.000',komisi:'Rp 11.000',status:'dikirim'},
+  {inv:'#INV-0278',tgl:'16 Mei 2025',buyer:'Pak Ahmad',mitra:'Bu Dewi',prod:'Ketan Hitam 2kg',total:'Rp 64.000',komisi:'Rp 6.400',status:'selesai'},
+  {inv:'#INV-0277',tgl:'16 Mei 2025',buyer:'Ibu Dewi',mitra:'Pak Budi',prod:'Ubi Kayu 15kg',total:'Rp 75.000',komisi:'Rp 0',status:'dibatalkan'},
+];
+const sbadge = {selesai:'badge-green',dikirim:'badge-blue',diproses:'badge-gold',pending:'badge-gray',dibatalkan:'badge-red'};
+const tt = document.getElementById('transaksi-tbody');
+transaksis.forEach(t => {
+  tt.innerHTML += `<tr>
+    <td><span style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--brown)">${t.inv}</span></td>
+    <td style="font-size:.78rem;color:var(--muted)">${t.tgl}</td>
+    <td style="font-size:.85rem">${t.buyer}</td>
+    <td style="font-size:.82rem">${t.mitra}</td>
+    <td style="font-size:.8rem;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.prod}</td>
+    <td style="font-weight:600">${t.total}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:.82rem;color:var(--green)">${t.komisi}</td>
+    <td><span class="badge ${sbadge[t.status]}">${t.status}</span></td>
+  </tr>`;
+});
+
+function setPeriod(p, btn) {
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+const obs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('visible'),i*80);obs.unobserve(e.target);}});},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
