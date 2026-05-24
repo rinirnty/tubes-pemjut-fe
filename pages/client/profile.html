@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Profil — PanenKu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+:root {
+  --cream:#F7F2E8; --cream2:#EDE4CF; --brown:#5C3D1E; --brown2:#8B6340;
+  --brown3:#C4956A; --green:#4A7C3F; --green2:#6FA05E; --green3:#C9DFB5;
+  --gold:#C8962A; --gold2:#F0C55A; --text:#2C1F0E; --muted:#7A6040;
+  --red:#C0392B; --red2:#FDECEA; --blue:#2471A3; --blue2:#D6EAF8;
+  --nav-w:240px; --header-h:64px; --border:rgba(92,61,30,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;display:flex;overflow-x:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:var(--nav-w);min-height:100vh;background:var(--brown);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:200;}
+.sidebar-logo{padding:1.4rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.08);}
+.sidebar-logo a{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#fff;text-decoration:none;display:flex;align-items:center;gap:.4rem;}
+.sidebar-logo span{color:var(--gold2);}
+.sidebar-role{font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);padding:.9rem 1.25rem .4rem;}
+.sidebar-nav{flex:1;padding:.5rem 0;}
+.nav-item{display:flex;align-items:center;gap:.75rem;padding:.68rem 1.25rem;text-decoration:none;color:rgba(255,255,255,.65);font-size:.88rem;font-weight:500;transition:all .2s;margin:.1rem .75rem;border-radius:10px;position:relative;}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff;}
+.nav-item.active{background:rgba(255,255,255,.15);color:#fff;}
+.nav-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--gold2);border-radius:99px;}
+.nav-icon{font-size:1.05rem;width:20px;text-align:center;flex-shrink:0;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:.65rem;font-weight:700;padding:.15rem .45rem;border-radius:999px;}
+.sidebar-divider{height:1px;background:rgba(255,255,255,.08);margin:.5rem 1rem;}
+.sidebar-footer{padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,.08);}
+.user-profile{display:flex;align-items:center;gap:.75rem;}
+.user-avatar{width:36px;height:36px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.user-name{font-size:.82rem;font-weight:600;color:#fff;}
+.user-email{font-size:.7rem;color:rgba(255,255,255,.45);}
+.btn-logout{margin-left:auto;background:none;border:none;color:rgba(255,255,255,.45);cursor:pointer;font-size:1rem;transition:color .2s;}
+.btn-logout:hover{color:var(--red);}
+
+/* MAIN */
+.main{margin-left:var(--nav-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* TOPBAR */
+.topbar{height:var(--header-h);background:rgba(247,242,232,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;position:sticky;top:0;z-index:100;}
+.page-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--text);}
+.breadcrumb{font-size:.78rem;color:var(--muted);}
+.topbar-right{display:flex;align-items:center;gap:.75rem;}
+.topbar-btn{width:36px;height:36px;border-radius:10px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:all .2s;position:relative;text-decoration:none;}
+.topbar-btn:hover{background:var(--cream2);}
+.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--red);border:1.5px solid var(--cream);}
+
+/* PAGE */
+.page-content{padding:1.75rem 2rem;flex:1;}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:1.75rem;}
+.stat-card{background:#fff;border-radius:16px;padding:1.25rem 1.5rem;border:1px solid var(--border);display:flex;align-items:flex-start;gap:1rem;transition:transform .2s,box-shadow .2s;}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(92,61,30,.1);}
+.stat-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+.stat-value{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--text);line-height:1;}
+.stat-label{font-size:.78rem;color:var(--muted);margin-top:.25rem;}
+.stat-change{font-size:.75rem;margin-top:.4rem;}
+.stat-change.up{color:var(--green);}
+.stat-change.down{color:var(--red);}
+
+/* TABLE */
+.table-wrap{background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:.75rem;}
+.table-title{font-weight:600;font-size:.95rem;color:var(--text);}
+.search-box{display:flex;align-items:center;gap:.5rem;background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:.45rem .85rem;}
+.search-box input{border:none;background:transparent;outline:none;font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);width:180px;}
+.search-box input::placeholder{color:var(--muted);}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--cream);}
+th{padding:.75rem 1.25rem;text-align:left;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+td{padding:.85rem 1.25rem;border-top:1px solid var(--border);font-size:.875rem;color:var(--text);vertical-align:middle;}
+tr:hover td{background:rgba(247,242,232,.6);}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .7rem;border-radius:999px;font-size:.72rem;font-weight:600;}
+.badge-green{background:#EAF6EA;color:var(--green);}
+.badge-gold{background:#FEF9E7;color:var(--gold);}
+.badge-red{background:var(--red2);color:var(--red);}
+.badge-blue{background:var(--blue2);color:var(--blue);}
+.badge-gray{background:var(--cream2);color:var(--muted);}
+.badge-brown{background:#F5EDE0;color:var(--brown);}
+
+/* BUTTONS */
+.btn{padding:.5rem 1.1rem;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.845rem;font-weight:500;cursor:pointer;transition:all .2s;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;}
+.btn-primary{background:var(--brown);color:#fff;}
+.btn-primary:hover{background:var(--green);transform:translateY(-1px);}
+.btn-green{background:var(--green);color:#fff;}
+.btn-green:hover{background:var(--brown);}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text);}
+.btn-outline:hover{background:var(--cream2);border-color:var(--brown2);}
+.btn-red{background:var(--red2);color:var(--red);}
+.btn-red:hover{background:var(--red);color:#fff;}
+.btn-gold{background:var(--gold);color:#fff;}
+.btn-gold:hover{background:var(--brown);}
+.btn-sm{padding:.35rem .75rem;font-size:.78rem;border-radius:8px;}
+.btn-block{width:100%;justify-content:center;}
+.btn-lg{padding:.8rem 1.8rem;font-size:.95rem;}
+
+/* CARD */
+.card{background:#fff;border-radius:16px;padding:1.5rem;border:1px solid var(--border);}
+.section-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:1rem;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(44,31,14,.5);backdrop-filter:blur(4px);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+.modal-overlay.show{opacity:1;pointer-events:auto;}
+.modal{background:#fff;border-radius:20px;width:90%;max-width:520px;padding:2rem;max-height:90vh;overflow-y:auto;transform:translateY(20px);transition:transform .25s;}
+.modal-overlay.show .modal{transform:none;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--text);}
+.modal-close{background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--muted);}
+.modal-close:hover{color:var(--red);}
+.modal-footer{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border);}
+.form-field{margin-bottom:1rem;}
+.form-field label{display:block;font-size:.8rem;font-weight:500;color:var(--brown);margin-bottom:.4rem;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.875rem;color:var(--text);background:#fff;outline:none;transition:border-color .2s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--green);}
+.form-field textarea{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;gap:.5rem;padding:1rem 1.5rem;border-top:1px solid var(--border);}
+.pg-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.82rem;color:var(--text);transition:all .2s;}
+.pg-btn:hover,.pg-btn.active{background:var(--brown);color:#fff;border-color:var(--brown);}
+.pg-info{font-size:.78rem;color:var(--muted);margin-left:auto;}
+
+/* FILTER */
+.filter-bar{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.25rem;}
+.filter-btn{padding:.4rem .9rem;border-radius:999px;border:1.5px solid var(--border);background:#fff;font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;}
+.filter-btn:hover,.filter-btn.active{background:var(--brown);color:#fff;border-color:var(--brown);}
+
+/* MISC */
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:600;flex-shrink:0;}
+.divider{height:1px;background:var(--border);margin:1.25rem 0;}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--muted);}
+.empty-state .es-icon{font-size:3rem;margin-bottom:.75rem;}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease;}
+.reveal.visible{opacity:1;transform:none;}
+
+.profile-header{background:linear-gradient(135deg,var(--brown) 0%,var(--green) 100%);border-radius:20px;padding:2rem;display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+.profile-header::after{content:"🌾";position:absolute;right:2rem;top:50%;transform:translateY(-50%);font-size:6rem;opacity:.1;}
+.profile-avatar-big{width:80px;height:80px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:2.5rem;flex-shrink:0;border:3px solid rgba(255,255,255,.3);}
+.profile-name{font-family:Playfair Display,serif;font-size:1.5rem;font-weight:700;color:#fff;}
+.profile-email{font-size:.85rem;color:rgba(255,255,255,.72);}
+.profile-role{display:inline-flex;align-items:center;gap:.3rem;background:rgba(255,255,255,.15);border-radius:999px;padding:.25rem .75rem;font-size:.75rem;color:#fff;margin-top:.4rem;}
+.tab-nav{display:flex;gap:.4rem;margin-bottom:1.5rem;background:var(--cream2);border-radius:14px;padding:.4rem;}
+.tab-btn{padding:.55rem 1.1rem;border-radius:10px;border:none;cursor:pointer;font-family:DM Sans,sans-serif;font-size:.85rem;font-weight:500;color:var(--muted);background:transparent;transition:all .2s;}
+.tab-btn.active{background:#fff;color:var(--brown);box-shadow:0 2px 10px rgba(92,61,30,.1);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:.9rem 0;border-bottom:1px solid var(--border);}
+.info-row:last-child{border-bottom:none;}
+.info-label{font-size:.8rem;color:var(--muted);}
+.info-value{font-weight:500;font-size:.88rem;}
+.addr-card{background:var(--cream);border-radius:14px;padding:1rem 1.25rem;margin-bottom:.75rem;display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;border:1.5px solid transparent;cursor:pointer;transition:all .2s;}
+.addr-card:hover,.addr-card.selected{border-color:var(--brown);background:#fff;}
+.addr-card.default .addr-tag{display:inline-flex;}
+.addr-tag{display:none;background:var(--green3);color:var(--green);font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;margin-left:.5rem;}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo"><a href="../../../index.html">🌾 Panen<span>Ku</span></a></div>
+  <div class="sidebar-role">Akun Pembeli</div>
+  <nav class="sidebar-nav"><a href="dashboard.html" class="nav-item "><span class="nav-icon">🏠</span> Dashboard</a>
+<a href="order.html" class="nav-item "><span class="nav-icon">🌾</span> Pesan Produk</a>
+<a href="cart.html" class="nav-item "><span class="nav-icon">🛒</span> Keranjang <span class="nav-badge" id="cart-count">0</span></a>
+<a href="history.html" class="nav-item "><span class="nav-icon">📦</span> Riwayat Pesanan</a>
+<a href="tracking.html" class="nav-item "><span class="nav-icon">🚚</span> Lacak Pengiriman</a>
+<div class="sidebar-divider"></div>
+<a href="profile.html" class="nav-item active"><span class="nav-icon">👤</span> Profil</a>
+</nav>
+  <div class="sidebar-footer">
+    <div class="user-profile">
+      <div class="user-avatar">👩</div>
+      <div><div class="user-name">Ibu Ratna</div><div class="user-email">ratna@email.com</div></div>
+      <button class="btn-logout" onclick="window.location.href='../../auth/login.html'">🚪</button>
+    </div>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="page-title">Profil Saya</div>
+      <div class="breadcrumb">Kelola informasi akun kamu</div>
+    </div>
+    <div class="topbar-right">
+      <a href="cart.html" class="topbar-btn" title="Keranjang">🛒<div class="notif-dot"></div></a>
+      <div class="topbar-btn" title="Notifikasi">🔔</div>
+    </div>
+  </div>
+  <div class="page-content">
+
+<!-- Header -->
+<div class="profile-header reveal">
+  <div class="profile-avatar-big">👩</div>
+  <div>
+    <div class="profile-name">Ibu Ratna Wulandari</div>
+    <div class="profile-email">ratna@email.com</div>
+    <div class="profile-role">🛒 Pembeli</div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tab-nav reveal">
+  <button class="tab-btn active" onclick="switchTab('info',this)">👤 Info Akun</button>
+  <button class="tab-btn" onclick="switchTab('alamat',this)">📍 Alamat</button>
+  <button class="tab-btn" onclick="switchTab('keamanan',this)">🔒 Keamanan</button>
+  <button class="tab-btn" onclick="switchTab('notif',this)">🔔 Notifikasi</button>
+</div>
+
+<!-- Tab: Info -->
+<div class="tab-panel active reveal" id="tab-info">
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+      <div class="section-title" style="margin:0">Informasi Pribadi</div>
+      <button class="btn btn-outline btn-sm" onclick="toggleEdit()">✏️ Edit</button>
+    </div>
+    <div id="info-view">
+      <div class="info-row"><span class="info-label">Nama Depan</span><span class="info-value">Ratna</span></div>
+      <div class="info-row"><span class="info-label">Nama Belakang</span><span class="info-value">Wulandari</span></div>
+      <div class="info-row"><span class="info-label">Email</span><span class="info-value">ratna@email.com</span></div>
+      <div class="info-row"><span class="info-label">No. HP</span><span class="info-value">081234567890</span></div>
+      <div class="info-row"><span class="info-label">Bergabung</span><span class="info-value">10 Januari 2025</span></div>
+      <div class="info-row"><span class="info-label">Total Pesanan</span><span class="info-value" style="color:var(--green);font-weight:700">24 pesanan</span></div>
+    </div>
+    <div id="info-edit" style="display:none">
+      <div class="form-row" style="margin-bottom:1rem">
+        <div class="form-field"><label>Nama Depan</label><input type="text" value="Ratna" style="border:1.5px solid var(--border);border-radius:10px;width:100%;padding:.65rem .9rem;font-family:DM Sans,sans-serif;font-size:.875rem;outline:none"/></div>
+        <div class="form-field"><label>Nama Belakang</label><input type="text" value="Wulandari" style="border:1.5px solid var(--border);border-radius:10px;width:100%;padding:.65rem .9rem;font-family:DM Sans,sans-serif;font-size:.875rem;outline:none"/></div>
+      </div>
+      <div class="form-field" style="margin-bottom:1rem"><label>No. HP</label><input type="text" value="081234567890" style="border:1.5px solid var(--border);border-radius:10px;width:100%;padding:.65rem .9rem;font-family:DM Sans,sans-serif;font-size:.875rem;outline:none"/></div>
+      <div style="display:flex;gap:.75rem">
+        <button class="btn btn-primary" onclick="saveProfile()">💾 Simpan</button>
+        <button class="btn btn-outline" onclick="toggleEdit()">Batal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab: Alamat -->
+<div class="tab-panel reveal" id="tab-alamat">
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+      <div class="section-title" style="margin:0">Alamat Tersimpan</div>
+      <button class="btn btn-primary btn-sm">+ Tambah Alamat</button>
+    </div>
+    <div class="addr-card default selected">
+      <div><div style="font-weight:600;font-size:.9rem">Rumah <span class="addr-tag">Utama</span></div><div style="font-size:.82rem;color:var(--muted);margin-top:.25rem">Jl. Merdeka No.5, RT 03/04, Kel. Sukajadi, Kec. Sukajadi, Bandung 40163</div><div style="font-size:.78rem;color:var(--muted);margin-top:.2rem">📱 081234567890</div></div>
+      <div style="display:flex;gap:.35rem;flex-shrink:0"><button class="btn btn-outline btn-sm">✏️</button><button class="btn btn-red btn-sm">🗑</button></div>
+    </div>
+    <div class="addr-card">
+      <div><div style="font-weight:600;font-size:.9rem">Kantor</div><div style="font-size:.82rem;color:var(--muted);margin-top:.25rem">Jl. Asia Afrika No.10, Kel. Braga, Kec. Sumur Bandung, Bandung 40111</div><div style="font-size:.78rem;color:var(--muted);margin-top:.2rem">📱 081234567890</div></div>
+      <div style="display:flex;gap:.35rem;flex-shrink:0"><button class="btn btn-outline btn-sm">✏️</button><button class="btn btn-red btn-sm">🗑</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab: Keamanan -->
+<div class="tab-panel reveal" id="tab-keamanan">
+  <div class="card">
+    <div class="section-title">Ubah Password</div>
+    <div class="form-field" style="margin-bottom:1rem"><label>Password Lama</label><input type="password" placeholder="Masukkan password lama" style="border:1.5px solid var(--border);border-radius:10px;width:100%;padding:.65rem .9rem;font-family:DM Sans,sans-serif;font-size:.875rem;outline:none"/></div>
+    <div class="form-field" style="margin-bottom:1rem"><label>Password Baru</label><input type="password" placeholder="Minimal 8 karakter" style="border:1.5px solid var(--border);border-radius:10px;width:100%;padding:.65rem .9rem;font-family:DM Sans,sans-serif;font-size:.875rem;outline:none"/></div>
+    <div class="form-field" style="margin-bottom:1.25rem"><label>Konfirmasi Password Baru</label><input type="password" placeholder="Ulangi password baru" style="border:1.5px solid var(--border);border-radius:10px;width:100%;padding:.65rem .9rem;font-family:DM Sans,sans-serif;font-size:.875rem;outline:none"/></div>
+    <button class="btn btn-primary" onclick="alert('Password berhasil diubah!')">🔒 Simpan Password</button>
+    <div class="divider"></div>
+    <div class="section-title">Sesi Aktif</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.85rem;background:var(--cream);border-radius:12px">
+      <div><div style="font-weight:600;font-size:.88rem">💻 Chrome — Windows</div><div style="font-size:.75rem;color:var(--muted)">Bandung, Indonesia • Aktif sekarang</div></div>
+      <span class="badge badge-green">Aktif</span>
+    </div>
+    <div class="divider"></div>
+    <button class="btn btn-red" onclick="if(confirm('Keluar dari semua sesi?'))window.location.href='../../auth/login.html'">🚪 Keluar dari Semua Sesi</button>
+  </div>
+</div>
+
+<!-- Tab: Notifikasi -->
+<div class="tab-panel reveal" id="tab-notif">
+  <div class="card">
+    <div class="section-title">Preferensi Notifikasi</div>
+    <div id="notif-list"></div>
+  </div>
+</div>
+
+  </div>
+</div>
+<script>
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+function toggleEdit(){
+  const view=document.getElementById('info-view');
+  const edit=document.getElementById('info-edit');
+  view.style.display=view.style.display==='none'?'block':'none';
+  edit.style.display=edit.style.display==='none'?'block':'none';
+}
+function saveProfile(){alert('Profil berhasil disimpan!');toggleEdit();}
+
+const notifs=[
+  {label:'Pesanan baru dikonfirmasi',desc:'Notifikasi saat pesanan kamu berhasil dibuat',on:true},
+  {label:'Status pengiriman berubah',desc:'Update real-time posisi paketmu',on:true},
+  {label:'Pesanan tiba',desc:'Notif saat kurir sudah di lokasi',on:true},
+  {label:'Promo & penawaran',desc:'Diskon dan promo menarik dari mitra',on:false},
+  {label:'Pengingat keranjang',desc:'Ingatkan kamu jika ada item di keranjang',on:false},
+];
+const nl=document.getElementById('notif-list');
+notifs.forEach((n,i)=>{
+  nl.innerHTML+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 0;border-bottom:1px solid var(--border)">
+    <div><div style="font-weight:600;font-size:.88rem">${n.label}</div><div style="font-size:.75rem;color:var(--muted)">${n.desc}</div></div>
+    <label style="position:relative;width:42px;height:24px;cursor:pointer;flex-shrink:0">
+      <input type="checkbox" ${n.on?'checked':''} style="opacity:0;width:0;height:0" onchange="this.parentElement.querySelector('span').style.background=this.checked?'var(--green)':'var(--cream2)'"/>
+      <span style="position:absolute;inset:0;background:${n.on?'var(--green)':'var(--cream2)'};border-radius:999px;transition:.3s"></span>
+      <span style="position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;transition:.3s;${n.on?'left:21px':'left:3px'}"></span>
+    </label>
+  </div>`;
+});
+
+const obs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('visible'),i*80);obs.unobserve(e.target);}});},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
