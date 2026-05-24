@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kontak — PanenKu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500;600&display=swap');
+:root {
+  --cream:#F7F2E8; --cream2:#EDE4CF; --brown:#5C3D1E; --brown2:#8B6340;
+  --brown3:#C4956A; --green:#4A7C3F; --green2:#6FA05E; --green3:#C9DFB5;
+  --gold:#C8962A; --gold2:#F0C55A; --text:#2C1F0E; --muted:#7A6040;
+  --red:#C0392B; --border:rgba(92,61,30,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.1rem 5%;background:rgba(247,242,232,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);transition:box-shadow .3s;}
+nav.scrolled{box-shadow:0 4px 24px rgba(92,61,30,.1);}
+.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--brown);text-decoration:none;display:flex;align-items:center;gap:.45rem;}
+.logo span{color:var(--green);}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:.88rem;font-weight:500;transition:color .2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--brown);}
+.nav-cta{display:flex;gap:.75rem;}
+
+/* BUTTONS */
+.btn{padding:.55rem 1.3rem;border-radius:999px;font-family:'DM Sans',sans-serif;font-size:.875rem;font-weight:500;cursor:pointer;transition:all .2s;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;}
+.btn-outline{background:transparent;border:1.5px solid var(--brown2);color:var(--brown);}
+.btn-outline:hover{background:var(--brown2);color:#fff;}
+.btn-primary{background:var(--brown);color:#fff;}
+.btn-primary:hover{background:var(--green);transform:translateY(-1px);box-shadow:0 4px 14px rgba(74,124,63,.3);}
+.btn-green{background:var(--green);color:#fff;}
+.btn-green:hover{background:var(--brown);transform:translateY(-1px);}
+.btn-gold{background:var(--gold);color:#fff;}
+.btn-gold:hover{background:var(--brown);transform:translateY(-2px);}
+.btn-lg{padding:.85rem 2rem;font-size:1rem;}
+.btn-block{width:100%;justify-content:center;}
+
+/* SECTION */
+section{padding:5rem 5%;}
+.section-label{font-size:.75rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--green2);margin-bottom:.6rem;}
+h2{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.6rem);line-height:1.2;color:var(--text);margin-bottom:.85rem;}
+h2 em{color:var(--green);font-style:italic;}
+h2 strong{color:var(--gold);}
+.section-desc{color:var(--muted);max-width:520px;line-height:1.8;margin-bottom:3rem;font-size:.95rem;}
+
+/* CARD */
+.card{background:#fff;border-radius:20px;border:1px solid var(--border);}
+
+/* FOOTER */
+footer{background:var(--text);color:rgba(255,255,255,.65);padding:3.5rem 5% 2rem;}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:2.5rem;}
+.footer-logo{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:#fff;text-decoration:none;display:flex;align-items:center;gap:.4rem;margin-bottom:1rem;}
+.footer-logo span{color:var(--gold2);}
+.footer-brand p{font-size:.85rem;line-height:1.8;}
+.footer-col h4{color:#fff;font-size:.88rem;font-weight:600;margin-bottom:1rem;}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:.6rem;}
+.footer-col a{color:rgba(255,255,255,.55);text-decoration:none;font-size:.85rem;transition:color .2s;}
+.footer-col a:hover{color:var(--gold2);}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:1.5rem;display:flex;justify-content:space-between;font-size:.78rem;flex-wrap:wrap;gap:.5rem;}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .6s ease,transform .6s ease;}
+.reveal.visible{opacity:1;transform:none;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  nav .nav-links{display:none;}
+  .footer-grid{grid-template-columns:1fr 1fr;}
+}
+
+.hero-contact{min-height:38vh;display:flex;align-items:center;padding:8rem 5% 3rem;background:linear-gradient(135deg,var(--green) 0%,var(--brown) 100%);position:relative;overflow:hidden;}
+.hero-contact::before{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");pointer-events:none;}
+.hero-contact h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.2rem);color:#fff;margin-bottom:.75rem;animation:fadeUp .7s ease both;}
+.hero-contact p{color:rgba(255,255,255,.75);font-size:1rem;max-width:480px;line-height:1.75;animation:fadeUp .7s .1s ease both;}
+
+.contact-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:2rem;align-items:start;}
+.info-card{background:#fff;border-radius:20px;padding:2rem;border:1px solid var(--border);}
+.info-item{display:flex;align-items:flex-start;gap:1rem;padding:1rem 0;border-bottom:1px solid var(--border);}
+.info-item:last-child{border-bottom:none;}
+.info-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+.info-label{font-size:.75rem;color:var(--muted);margin-bottom:.2rem;}
+.info-value{font-weight:600;font-size:.9rem;color:var(--text);}
+.info-sub{font-size:.78rem;color:var(--muted);margin-top:.1rem;}
+
+.form-card{background:#fff;border-radius:20px;padding:2rem;border:1px solid var(--border);}
+.form-field{margin-bottom:1.1rem;}
+.form-field label{display:block;font-size:.8rem;font-weight:500;color:var(--brown);margin-bottom:.4rem;}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:.7rem .95rem;border:1.5px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:.875rem;color:var(--text);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s;}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(74,124,63,.1);}
+.form-field textarea{resize:vertical;min-height:120px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;}
+
+.faq-item{border-bottom:1px solid var(--border);overflow:hidden;}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 0;cursor:pointer;font-weight:600;font-size:.9rem;user-select:none;}
+.faq-q:hover{color:var(--green);}
+.faq-a{font-size:.875rem;color:var(--muted);line-height:1.75;max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s ease;}
+.faq-a.open{max-height:200px;padding-bottom:1rem;}
+.faq-icon{transition:transform .3s;font-size:.85rem;}
+.faq-icon.open{transform:rotate(180deg);}
+
+.social-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:2rem;}
+.social-card{background:#fff;border-radius:16px;padding:1.25rem;border:1px solid var(--border);text-align:center;transition:transform .2s,box-shadow .2s;text-decoration:none;color:var(--text);}
+.social-card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(92,61,30,.12);}
+.social-icon{font-size:2rem;margin-bottom:.5rem;}
+.social-name{font-size:.8rem;font-weight:600;}
+.social-handle{font-size:.72rem;color:var(--muted);}
+
+.alert{padding:.85rem 1rem;border-radius:12px;font-size:.875rem;margin-bottom:1rem;display:none;align-items:center;gap:.5rem;}
+.alert.success{background:#EAF6EA;color:var(--green);border:1px solid #A8DAA0;}
+.alert.show{display:flex;}
+
+@media(max-width:768px){.contact-grid{grid-template-columns:1fr;}.social-grid{grid-template-columns:1fr 1fr;}.form-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<nav id="navbar">
+  <a href="../../index.html" class="logo">🌾 Panen<span>Ku</span></a>
+  <ul class="nav-links"><li><a href="catalog.html" class="">Katalog</a></li><li><a href="about.html" class="">Tentang Kami</a></li><li><a href="contact.html" class="active">Kontak</a></li></ul>
+  <div class="nav-cta">
+    <a href="../auth/login.html" class="btn btn-outline">Masuk</a>
+    <a href="../auth/register.html" class="btn btn-primary">Daftar Gratis</a>
+  </div>
+</nav>
+
+<div class="hero-contact">
+  <div style="position:relative;z-index:1">
+    <div style="font-size:.75rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);margin-bottom:.6rem">Hubungi Kami</div>
+    <h1>Ada Pertanyaan? <br>Kami Siap Membantu!</h1>
+    <p>Tim PanenKu siap membantu Anda 7 hari seminggu. Hubungi kami melalui form, WhatsApp, atau email.</p>
+  </div>
+</div>
+
+<section>
+  <div class="contact-grid reveal">
+    <!-- Info -->
+    <div>
+      <div class="info-card" style="margin-bottom:1.25rem">
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:1rem">Informasi Kontak</div>
+        <div class="info-item">
+          <div class="info-icon" style="background:#EAF3DE">📍</div>
+          <div><div class="info-label">Alamat Kantor</div><div class="info-value">Jl. Pasteur No. 25, Bandung</div><div class="info-sub">Jawa Barat, Indonesia 40161</div></div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon" style="background:#FFF0E8">📱</div>
+          <div><div class="info-label">WhatsApp / Telepon</div><div class="info-value">+62 812-3456-7890</div><div class="info-sub">Senin–Minggu, 08.00–20.00 WIB</div></div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon" style="background:#E0F0FF">✉️</div>
+          <div><div class="info-label">Email</div><div class="info-value">halo@panenku.com</div><div class="info-sub">Balasan dalam 1×24 jam</div></div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon" style="background:#FFF8E0">🕐</div>
+          <div><div class="info-label">Jam Operasional</div><div class="info-value">Senin – Minggu</div><div class="info-sub">08.00 – 20.00 WIB</div></div>
+        </div>
+      </div>
+      <!-- WhatsApp CTA -->
+      <a href="https://wa.me/6281234567890" target="_blank" class="btn btn-green btn-block btn-lg" style="border-radius:14px;margin-bottom:1.25rem">
+        💬 Chat via WhatsApp
+      </a>
+      <!-- Social -->
+      <div class="social-grid">
+        <div class="social-card"><div class="social-icon">📘</div><div class="social-name">Facebook</div><div class="social-handle">@PanenKu</div></div>
+        <div class="social-card"><div class="social-icon">📸</div><div class="social-name">Instagram</div><div class="social-handle">@panenku.id</div></div>
+        <div class="social-card"><div class="social-icon">🐦</div><div class="social-name">Twitter</div><div class="social-handle">@PanenKuid</div></div>
+        <div class="social-card"><div class="social-icon">▶️</div><div class="social-name">YouTube</div><div class="social-handle">PanenKu TV</div></div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-card reveal">
+      <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:1.5rem">Kirim Pesan</div>
+      <div class="alert success" id="alert-ok">✅ Pesan berhasil dikirim! Tim kami akan menghubungi Anda segera.</div>
+      <form id="contact-form" onsubmit="submitForm(event)" novalidate>
+        <div class="form-row">
+          <div class="form-field"><label>Nama Depan *</label><input type="text" id="fname" placeholder="Nama depan" required/></div>
+          <div class="form-field"><label>Nama Belakang</label><input type="text" placeholder="Nama belakang"/></div>
+        </div>
+        <div class="form-field"><label>Email *</label><input type="email" id="email" placeholder="email@contoh.com" required/></div>
+        <div class="form-field"><label>No. WhatsApp</label><input type="text" placeholder="08xxxxxxxxxx"/></div>
+        <div class="form-field">
+          <label>Topik *</label>
+          <select id="topik" required>
+            <option value="">Pilih topik...</option>
+            <option>Pertanyaan produk</option>
+            <option>Kendala pesanan</option>
+            <option>Daftar sebagai mitra</option>
+            <option>Laporan masalah</option>
+            <option>Saran & masukan</option>
+            <option>Lainnya</option>
+          </select>
+        </div>
+        <div class="form-field"><label>Pesan *</label><textarea id="pesan" placeholder="Ceritakan pertanyaan atau kendala Anda..." required></textarea></div>
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1.25rem">
+          <input type="checkbox" id="agree" style="width:16px;height:16px;accent-color:var(--green)"/>
+          <label for="agree" style="font-size:.8rem;color:var(--muted)">Saya menyetujui <a href="#" style="color:var(--green)">Kebijakan Privasi</a> PanenKu</label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="submit-btn">
+          <span id="btn-text">📨 Kirim Pesan</span>
+          <span id="btn-load" style="display:none">Mengirim...</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section style="background:var(--cream2)">
+  <div class="section-label">FAQ</div>
+  <h2>Pertanyaan yang <em>Sering Ditanyakan</em></h2>
+  <div style="max-width:700px;margin-top:1.5rem" id="faq-list"></div>
+</section>
+
+<!-- Map placeholder -->
+<section style="padding:3rem 5%">
+  <div style="background:linear-gradient(135deg,var(--green3) 0%,var(--cream2) 100%);border-radius:24px;height:280px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;position:relative;overflow:hidden">
+    <div style="font-size:4rem">🗺️</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--brown)">Kantor PanenKu — Bandung</div>
+    <div style="font-size:.88rem;color:var(--muted)">Jl. Pasteur No. 25, Bandung, Jawa Barat</div>
+    <a href="https://maps.google.com" target="_blank" class="btn btn-primary">📍 Buka di Google Maps</a>
+  </div>
+</section>
+
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="../../index.html" class="footer-logo">🌾 Panen<span>Ku</span></a>
+      <p>Platform penyedia bahan pangan pokok — beras putih, beras ketan, ubi jalar, ubi kayu — yang menghubungkan pembeli, mitra reseller, dan admin.</p>
+    </div>
+    <div class="footer-col"><h4>Produk</h4><ul>
+      <li><a href="#">Beras Putih</a></li><li><a href="#">Beras Ketan</a></li>
+      <li><a href="#">Ubi Jalar</a></li><li><a href="#">Ubi Kayu</a></li><li><a href="#">Beras Merah</a></li>
+    </ul></div>
+    <div class="footer-col"><h4>Platform</h4><ul>
+      <li><a href="catalog.html">Katalog</a></li><li><a href="about.html">Tentang Kami</a></li>
+      <li><a href="contact.html">Kontak</a></li>
+    </ul></div>
+    <div class="footer-col"><h4>Bantuan</h4><ul>
+      <li><a href="#">FAQ</a></li><li><a href="#">Syarat & Ketentuan</a></li>
+      <li><a href="#">Kebijakan Privasi</a></li>
+    </ul></div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 PanenKu. Semua hak dilindungi.</span>
+    <span>🌾 Bahan pokok berkualitas untuk Indonesia</span>
+  </div>
+</footer>
+
+<script>
+window.addEventListener('scroll',()=>document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>30));
+const obs=new IntersectionObserver(entries=>{entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('visible'),i*80);obs.unobserve(e.target);}});},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+const faqs=[
+  {q:'Bagaimana cara mendaftar sebagai pembeli?',a:'Klik tombol "Daftar Gratis" di pojok kanan atas, pilih role "Pembeli", isi data diri, dan akun kamu langsung aktif. Proses pendaftaran hanya butuh 2 menit.'},
+  {q:'Bagaimana cara menjadi mitra reseller PanenKu?',a:'Daftar dengan memilih role "Mitra Reseller", lengkapi data toko dan rekening bank. Admin kami akan memverifikasi akun dalam 1×24 jam kerja.'},
+  {q:'Metode pembayaran apa yang tersedia?',a:'Saat ini kami mendukung pembayaran via QRIS (bisa dari semua e-wallet dan mobile banking) dan transfer bank manual. Pembayaran QRIS langsung terverifikasi otomatis.'},
+  {q:'Berapa lama waktu pengiriman?',a:'Tergantung lokasi pengiriman dan mitra. Rata-rata pengiriman di dalam kota 1 hari, luar kota 2-3 hari kerja. Kamu bisa melacak status pengiriman real-time di halaman Tracking.'},
+  {q:'Apakah ada minimal pembelian?',a:'Tidak ada minimal pembelian untuk eceran. Untuk pembelian grosir (partai besar) silakan hubungi mitra langsung atau tim kami via WhatsApp.'},
+  {q:'Bagaimana cara menghitung komisi mitra?',a:'Komisi dihitung otomatis berdasarkan persentase yang disepakati per kategori produk. Laporan komisi tersedia real-time di dashboard mitra dan dibayar setiap awal bulan.'},
+];
+
+const fl=document.getElementById('faq-list');
+faqs.forEach((f,i)=>{
+  fl.innerHTML+=`<div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(${i})">
+      <span>${f.q}</span>
+      <span class="faq-icon" id="fi-${i}">▾</span>
+    </div>
+    <div class="faq-a" id="fa-${i}">${f.a}</div>
+  </div>`;
+});
+
+function toggleFaq(i){
+  const a=document.getElementById('fa-'+i);
+  const ic=document.getElementById('fi-'+i);
+  const isOpen=a.classList.contains('open');
+  document.querySelectorAll('.faq-a').forEach(el=>el.classList.remove('open'));
+  document.querySelectorAll('.faq-icon').forEach(el=>el.classList.remove('open'));
+  if(!isOpen){a.classList.add('open');ic.classList.add('open');}
+}
+
+async function submitForm(e){
+  e.preventDefault();
+  const fname=document.getElementById('fname').value.trim();
+  const email=document.getElementById('email').value.trim();
+  const topik=document.getElementById('topik').value;
+  const pesan=document.getElementById('pesan').value.trim();
+  const agree=document.getElementById('agree').checked;
+  if(!fname||!email||!topik||!pesan||!agree){alert('Harap lengkapi semua field yang wajib diisi dan centang persetujuan.');return;}
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;
+  document.getElementById('btn-text').style.display='none';
+  document.getElementById('btn-load').style.display='inline';
+  await new Promise(r=>setTimeout(r,1500));
+  btn.disabled=false;
+  document.getElementById('btn-text').style.display='inline';
+  document.getElementById('btn-load').style.display='none';
+  document.getElementById('alert-ok').classList.add('show');
+  document.getElementById('contact-form').reset();
+  setTimeout(()=>document.getElementById('alert-ok').classList.remove('show'),5000);
+}
+
+</script>
+</body>
+</html>
