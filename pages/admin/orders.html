@@ -369,13 +369,6 @@ tr:hover td { background: rgba(247,242,232,.6); }
 <script>
 const orders = [
   {inv:'#INV-0284',buyer:'Ibu Ratna',phone:'081234567890',product:'Beras Pandan Wangi 5kg x2',mitra:'Pak Hendra',total:'Rp 130.000',pay:'lunas',status:'selesai',tgl:'19 Mei 2025',addr:'Jl. Merdeka No.5 Bandung'},
-  {inv:'#INV-0283',buyer:'Pak Darto',phone:'082345678901',product:'Ubi Jalar Merah 10kg',mitra:'Pak Darto',total:'Rp 80.000',pay:'lunas',status:'dikirim',tgl:'19 Mei 2025',addr:'Jl. Sudirman No.12 Bandung'},
-  {inv:'#INV-0282',buyer:'Bu Siti',phone:'083456789012',product:'Beras Ketan Putih 3kg',mitra:'Bu Siti',total:'Rp 84.000',pay:'lunas',status:'diproses',tgl:'18 Mei 2025',addr:'Jl. Asia Afrika No.3 Bandung'},
-  {inv:'#INV-0281',buyer:'Pak Budi',phone:'084567890123',product:'Singkong Segar 20kg',mitra:'Pak Budi',total:'Rp 100.000',pay:'belum bayar',status:'pending',tgl:'18 Mei 2025',addr:'Jl. Braga No.8 Bandung'},
-  {inv:'#INV-0280',buyer:'CV Maju',phone:'085678901234',product:'Beras IR64 50kg x2',mitra:'Bu Dewi',total:'Rp 540.000',pay:'lunas',status:'selesai',tgl:'17 Mei 2025',addr:'Jl. Pasteur No.20 Bandung'},
-  {inv:'#INV-0279',buyer:'Bu Lestari',phone:'086789012345',product:'Beras Merah Organik 5kg',mitra:'CV Agri',total:'Rp 110.000',pay:'lunas',status:'dikirim',tgl:'17 Mei 2025',addr:'Jl. Cihampelas No.15 Bandung'},
-  {inv:'#INV-0278',buyer:'Pak Ahmad',phone:'087890123456',product:'Beras Ketan Hitam 2kg',mitra:'Bu Dewi',total:'Rp 64.000',pay:'lunas',status:'selesai',tgl:'16 Mei 2025',addr:'Jl. Dago No.7 Bandung'},
-  {inv:'#INV-0277',buyer:'Ibu Dewi',phone:'088901234567',product:'Ubi Kayu 15kg',mitra:'Pak Budi',total:'Rp 75.000',pay:'belum bayar',status:'dibatalkan',tgl:'16 Mei 2025',addr:'Jl. Lombok No.2 Bandung'},
 ];
 
 const sbadge = {selesai:'badge-green',dikirim:'badge-blue',diproses:'badge-gold',pending:'badge-gray',dibatalkan:'badge-red'};
@@ -403,7 +396,6 @@ function renderOrders() {
         <td><span style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--brown)">${o.inv}</span></td>
         <td><div style="display:flex;align-items:center;gap:.5rem"><div class="avatar" style="background:var(--cream2);font-size:.75rem">${o.buyer[0]}</div>${o.buyer}</div></td>
         <td style="font-size:.8rem;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.product}</td>
-        <td style="font-size:.8rem">${o.mitra}</td>
         <td style="font-weight:600">${o.total}</td>
         <td><span class="badge ${pbadge[o.pay]}">${o.pay}</span></td>
         <td><span class="badge ${sbadge[o.status]}">${o.status}</span></td>
@@ -423,7 +415,6 @@ function showDetail(i) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
       <div><div style="font-size:.75rem;color:var(--muted);margin-bottom:.25rem">Pembeli</div><div style="font-weight:600">${o.buyer}</div><div style="font-size:.8rem;color:var(--muted)">${o.phone}</div></div>
       <div><div style="font-size:.75rem;color:var(--muted);margin-bottom:.25rem">Alamat</div><div style="font-size:.85rem">${o.addr}</div></div>
-      <div><div style="font-size:.75rem;color:var(--muted);margin-bottom:.25rem">Mitra</div><div style="font-weight:600">${o.mitra}</div></div>
       <div><div style="font-size:.75rem;color:var(--muted);margin-bottom:.25rem">Total</div><div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--brown)">${o.total}</div></div>
     </div>
     <div style="background:var(--cream);border-radius:12px;padding:1rem;margin-bottom:1.25rem">

@@ -101,7 +101,6 @@ footer{background:var(--text);color:rgba(255,255,255,.65);padding:3.5rem 5% 2rem
 .prod-cat{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green2);margin-bottom:.3rem;}
 .prod-name{font-weight:600;font-size:.95rem;margin-bottom:.2rem;color:var(--text);}
 .prod-var{font-size:.78rem;color:var(--muted);margin-bottom:.5rem;}
-.prod-mitra{font-size:.75rem;color:var(--brown3);margin-bottom:.85rem;display:flex;align-items:center;gap:.3rem;}
 .prod-footer{display:flex;align-items:center;justify-content:space-between;}
 .prod-price{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--brown);}
 .prod-unit{font-size:.7rem;color:var(--muted);margin-top:.1rem;}
@@ -143,7 +142,7 @@ footer{background:var(--text);color:rgba(255,255,255,.65);padding:3.5rem 5% 2rem
   <div style="position:relative;z-index:1">
     <div style="font-size:.75rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);margin-bottom:.6rem">Katalog Produk</div>
     <h1>Beras, Ketan & Ubi <br>Pilihan Terbaik</h1>
-    <p>Temukan ratusan produk bahan pokok berkualitas dari mitra reseller terpercaya di seluruh Indonesia.</p>
+    <p>Temukan ratusan produk bahan pokok berkualitas dari mitra terpercaya.</p>
     <div class="search-hero">
       <input type="text" id="hero-search" placeholder="Cari beras, ketan, ubi..." oninput="syncSearch()"/>
       <button class="btn btn-gold btn-lg" onclick="syncSearch()">🔍 Cari</button>
@@ -198,7 +197,7 @@ footer{background:var(--text);color:rgba(255,255,255,.65);padding:3.5rem 5% 2rem
   <div class="footer-grid">
     <div class="footer-brand">
       <a href="../../index.html" class="footer-logo">🌾 Panen<span>Ku</span></a>
-      <p>Platform penyedia bahan pangan pokok — beras putih, beras ketan, ubi jalar, ubi kayu — yang menghubungkan pembeli, mitra reseller, dan admin.</p>
+      <p>Platform penyedia bahan pangan pokok — beras putih, beras ketan, ubi jalar, ubi kayu — yang menghubungkan pembeli, admin.</p>
     </div>
     <div class="footer-col"><h4>Produk</h4><ul>
       <li><a href="#">Beras Putih</a></li><li><a href="#">Beras Ketan</a></li>
@@ -233,15 +232,15 @@ const KAT = [
   {emoji:'🌿',name:'Beras Merah',key:'Beras Merah'},
 ];
 const PRODS = [
-  {id:1,emoji:'🍚',badge:'terlaris',cat:'Beras Putih',name:'Beras Pandan Wangi',var:'Premium • Pulen & Wangi',mitra:'Pak Hendra',price:13000,priceStr:'Rp 65.000',unit:'/5 kg',bg:'#FFF8E8',desc:'Beras premium pilihan petani lokal. Pulen, wangi, cocok untuk masakan sehari-hari.'},
-  {id:2,emoji:'🌾',badge:'baru',cat:'Beras Ketan',name:'Beras Ketan Putih',var:'Super • Lengket Sempurna',mitra:'Bu Siti',price:28000,priceStr:'Rp 28.000',unit:'/kg',bg:'#F0F8E8',desc:'Beras ketan putih berkualitas tinggi. Cocok untuk lemper, bubur, dan kue tradisional.'},
-  {id:3,emoji:'🍠',badge:'',cat:'Ubi Jalar',name:'Ubi Jalar Merah',var:'Manis • Segar dari Kebun',mitra:'Pak Darto',price:8000,priceStr:'Rp 8.000',unit:'/kg',bg:'#FFF0E8',desc:'Ubi jalar merah segar langsung dari kebun. Manis alami, cocok untuk kolak dan gorengan.'},
-  {id:4,emoji:'🌿',badge:'',cat:'Beras Merah',name:'Beras Merah Organik',var:'Organik • Bebas Pestisida',mitra:'CV Agri',price:22000,priceStr:'Rp 22.000',unit:'/kg',bg:'#F0F5E8',desc:'Beras merah organik bersertifikat. Kaya serat, cocok untuk diet sehat.'},
-  {id:5,emoji:'🟤',badge:'promo',cat:'Ubi Kayu',name:'Singkong Segar',var:'Lokal • Manis & Empuk',mitra:'Pak Budi',price:5000,priceStr:'Rp 5.000',unit:'/kg',bg:'#F5EDE0',desc:'Singkong segar pilihan. Empuk, manis, bisa untuk tape, kolak, atau keripik.'},
-  {id:6,emoji:'🍚',badge:'',cat:'Beras Ketan',name:'Beras Ketan Hitam',var:'Spesial • Kue & Bubur',mitra:'Bu Dewi',price:32000,priceStr:'Rp 32.000',unit:'/kg',bg:'#F0EEF8',desc:'Beras ketan hitam pilihan untuk bubur ketan hitam dan kue tradisional Jawa.'},
-  {id:7,emoji:'🍚',badge:'',cat:'Beras Putih',name:'Beras IR 64',var:'Medium • Harga Terjangkau',mitra:'Pak Hendra',price:11000,priceStr:'Rp 55.000',unit:'/5 kg',bg:'#FFF8E8',desc:'Beras IR 64 pilihan keluarga. Harga terjangkau, kualitas terjamin.'},
-  {id:8,emoji:'🍠',badge:'',cat:'Ubi Jalar',name:'Ubi Jalar Ungu',var:'Manis • Kaya Antioksidan',mitra:'Pak Darto',price:9000,priceStr:'Rp 9.000',unit:'/kg',bg:'#F5E8FF',desc:'Ubi jalar ungu kaya antioksidan. Warna cantik, rasa manis, cocok untuk es krim dan kue.'},
-  {id:9,emoji:'🌾',badge:'',cat:'Beras Putih',name:'Beras Pera Lokal',var:'Lokal • Tidak Pulen',mitra:'Bu Siti',price:9600,priceStr:'Rp 48.000',unit:'/5 kg',bg:'#FFF8E8',desc:'Beras pera lokal, cocok untuk nasi goreng dan nasi uduk karena teksturnya yang padat.'},
+  {id:1,emoji:'🍚',badge:'terlaris',cat:'Beras Putih',name:'Beras Pandan Wangi',var:'Premium • Pulen & Wangi',price:13000,priceStr:'Rp 65.000',unit:'/5 kg',bg:'#FFF8E8',desc:'Beras premium pilihan petani lokal. Pulen, wangi, cocok untuk masakan sehari-hari.'},
+  {id:2,emoji:'🌾',badge:'baru',cat:'Beras Ketan',name:'Beras Ketan Putih',var:'Super • Lengket Sempurna',price:28000,priceStr:'Rp 28.000',unit:'/kg',bg:'#F0F8E8',desc:'Beras ketan putih berkualitas tinggi. Cocok untuk lemper, bubur, dan kue tradisional.'},
+  {id:3,emoji:'🍠',badge:'',cat:'Ubi Jalar',name:'Ubi Jalar Merah',var:'Manis • Segar dari Kebun',price:8000,priceStr:'Rp 8.000',unit:'/kg',bg:'#FFF0E8',desc:'Ubi jalar merah segar langsung dari kebun. Manis alami, cocok untuk kolak dan gorengan.'},
+  {id:4,emoji:'🌿',badge:'',cat:'Beras Merah',name:'Beras Merah Organik',var:'Organik • Bebas Pestisida',price:22000,priceStr:'Rp 22.000',unit:'/kg',bg:'#F0F5E8',desc:'Beras merah organik bersertifikat. Kaya serat, cocok untuk diet sehat.'},
+  {id:5,emoji:'🟤',badge:'promo',cat:'Ubi Kayu',name:'Singkong Segar',var:'Lokal • Manis & Empuk',price:5000,priceStr:'Rp 5.000',unit:'/kg',bg:'#F5EDE0',desc:'Singkong segar pilihan. Empuk, manis, bisa untuk tape, kolak, atau keripik.'},
+  {id:6,emoji:'🍚',badge:'',cat:'Beras Ketan',name:'Beras Ketan Hitam',var:'Spesial • Kue & Bubur',price:32000,priceStr:'Rp 32.000',unit:'/kg',bg:'#F0EEF8',desc:'Beras ketan hitam pilihan untuk bubur ketan hitam dan kue tradisional Jawa.'},
+  {id:7,emoji:'🍚',badge:'',cat:'Beras Putih',name:'Beras IR 64',var:'Medium • Harga Terjangkau',price:11000,priceStr:'Rp 55.000',unit:'/5 kg',bg:'#FFF8E8',desc:'Beras IR 64 pilihan keluarga. Harga terjangkau, kualitas terjamin.'},
+  {id:8,emoji:'🍠',badge:'',cat:'Ubi Jalar',name:'Ubi Jalar Ungu',var:'Manis • Kaya Antioksidan',price:9000,priceStr:'Rp 9.000',unit:'/kg',bg:'#F5E8FF',desc:'Ubi jalar ungu kaya antioksidan. Warna cantik, rasa manis, cocok untuk es krim dan kue.'},
+  {id:9,emoji:'🌾',badge:'',cat:'Beras Putih',name:'Beras Pera Lokal',var:'Lokal • Tidak Pulen',price:9600,priceStr:'Rp 48.000',unit:'/5 kg',bg:'#FFF8E8',desc:'Beras pera lokal, cocok untuk nasi goreng dan nasi uduk karena teksturnya yang padat.'},
 ];
 
 let currentKat='semua', currentView='grid', qty=1;
@@ -290,7 +289,6 @@ function renderProds(q){
         <div class="prod-cat">${p.cat}</div>
         <div class="prod-name">${p.name}</div>
         <div class="prod-var">${p.var}</div>
-        <div class="prod-mitra">🤝 ${p.mitra}</div>
         <div class="prod-footer">
           <div><div class="prod-price">${p.priceStr}</div><div class="prod-unit">${p.unit}</div></div>
           <button class="prod-btn" onclick="openModal(${p.id})">+</button>
@@ -310,7 +308,7 @@ function renderProds(q){
         <tbody>${filtered.map(p=>`<tr style="border-top:1px solid var(--border)">
           <td style="padding:.85rem 1.25rem;display:flex;align-items:center;gap:.75rem"><span style="font-size:2rem">${p.emoji}</span><div><div style="font-weight:600;font-size:.9rem">${p.name}</div><div style="font-size:.75rem;color:var(--muted)">${p.var}</div></div></td>
           <td style="padding:.85rem 1.25rem;font-size:.85rem">${p.cat}</td>
-          <td style="padding:.85rem 1.25rem;font-size:.82rem;color:var(--brown3)">🤝 ${p.mitra}</td>
+    
           <td style="padding:.85rem 1.25rem;font-family:Playfair Display,serif;font-weight:700;color:var(--brown)">${p.priceStr}<span style="font-size:.7rem;color:var(--muted);font-family:DM Sans,sans-serif;font-weight:400">${p.unit}</span></td>
           <td style="padding:.85rem 1.25rem"><button class="btn btn-primary" style="font-size:.8rem;padding:.4rem .9rem;border-radius:8px" onclick="openModal(${p.id})">+ Tambah</button></td>
         </tr>`).join('')}</tbody>
@@ -333,7 +331,6 @@ function openModal(id){
       <div style="font-family:Playfair Display,serif;font-size:1.5rem;font-weight:700;color:var(--brown)">${selProd.priceStr}</div>
       <span style="font-size:.78rem;color:var(--muted)">${selProd.unit}</span>
     </div>
-    <div style="font-size:.8rem;color:var(--brown3);margin-bottom:.75rem">🤝 ${selProd.mitra}</div>
     <div class="qty-ctrl">
       <button class="qty-btn" onclick="changeQty(-1)">−</button>
       <span class="qty-val" id="qty-display">1</span>

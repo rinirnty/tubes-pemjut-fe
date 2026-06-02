@@ -268,7 +268,6 @@ tr:hover td { background: rgba(247,242,232,.6); }
     .prod-body { padding:1rem 1.1rem; }
     .prod-cat { font-size:.68rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--green2); margin-bottom:.25rem; }
     .prod-name { font-weight:600; font-size:.92rem; margin-bottom:.2rem; }
-    .prod-mitra { font-size:.75rem; color:var(--muted); margin-bottom:.6rem; }
     .prod-footer { display:flex; align-items:center; justify-content:space-between; }
     .prod-price { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--brown); }
     .prod-unit { font-size:.7rem; color:var(--muted); }
@@ -400,8 +399,7 @@ tr:hover td { background: rgba(247,242,232,.6); }
       <div class="form-field">
         <label>Mitra</label>
         <select id="f-mitra">
-          <option>Mitra Pak Hendra</option><option>Mitra Bu Siti</option>
-          <option>Mitra Pak Darto</option><option>Mitra CV Agri</option>
+          <option>Mitra Pak Hendra</option>
         </select>
       </div>
     </div>
@@ -418,12 +416,7 @@ tr:hover td { background: rgba(247,242,232,.6); }
 
 <script>
 const allProducts = [
-  {emoji:'🍚',cat:'Beras Putih',name:'Beras Pandan Wangi',var:'Premium • Pulen',mitra:'Mitra Pak Hendra',price:'Rp 65.000',unit:'/5 kg',stock:120,bg:'#FFF8E8',status:'aktif'},
-  {emoji:'🌾',cat:'Beras Ketan',name:'Beras Ketan Putih',var:'Super • Lengket',mitra:'Mitra Bu Siti',price:'Rp 28.000',unit:'/kg',stock:8,bg:'#F0F8E8',status:'stok menipis'},
-  {emoji:'🍠',cat:'Ubi Jalar',name:'Ubi Jalar Merah',var:'Manis • Segar',mitra:'Mitra Pak Darto',price:'Rp 8.000',unit:'/kg',stock:200,bg:'#FFF0E8',status:'aktif'},
-  {emoji:'🌿',cat:'Beras Merah',name:'Beras Merah Organik',var:'Organik • Sehat',mitra:'Mitra CV Agri',price:'Rp 22.000',unit:'/kg',stock:5,bg:'#F0F5E8',status:'stok menipis'},
-  {emoji:'🟤',cat:'Ubi Kayu',name:'Singkong Segar',var:'Lokal • Manis',mitra:'Mitra Pak Budi',price:'Rp 5.000',unit:'/kg',stock:300,bg:'#F5EDE0',status:'aktif'},
-  {emoji:'🍚',cat:'Beras Ketan',name:'Beras Ketan Hitam',var:'Spesial • Kue & Bubur',mitra:'Mitra Bu Dewi',price:'Rp 32.000',unit:'/kg',stock:0,bg:'#F0EEF8',status:'nonaktif'},
+  {emoji:'🍚',cat:'Beras Putih',name:'Beras Pandan Wangi',var:'Premium • Pulen',mitra:'Mitra Pak Hendra',price:'Rp 65.000',unit:'/5 kg',stock:120,bg:'#FFF8E8',status:'aktif'}
 ];
 
 let currentKat = 'semua';
@@ -462,7 +455,7 @@ function renderProducts() {
         <div class="prod-body">
           <div class="prod-cat">${p.cat}</div>
           <div class="prod-name">${p.name}</div>
-          <div class="prod-mitra">🤝 ${p.mitra} • Stok: <strong>${p.stock}</strong></div>
+
           <div class="prod-footer">
             <div><div class="prod-price">${p.price}</div><div class="prod-unit">${p.unit}</div></div>
             <div class="prod-actions">
@@ -481,7 +474,7 @@ function renderProducts() {
         <td>${p.cat}</td>
         <td style="font-weight:600">${p.price}${p.unit}</td>
         <td>${p.stock}</td>
-        <td style="font-size:.8rem">${p.mitra}</td>
+       
         <td><span class="badge ${p.status==='aktif'?'badge-green':p.status==='stok menipis'?'badge-gold':'badge-red'}">${p.status}</span></td>
         <td><div style="display:flex;gap:.4rem">
           <button class="btn btn-outline btn-sm" onclick="editProduct(${i})">✏️ Edit</button>

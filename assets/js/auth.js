@@ -74,7 +74,6 @@ function redirectToDashboard() {
   const role = getRole();
   const routes = {
     pembeli: '/pages/client/dashboard.html',
-    mitra:   '/pages/mitra/dashboard.html',
     admin:   '/pages/admin/dashboard.html',
   };
   window.location.href = routes[role] || '/pages/auth/login.html';
@@ -111,7 +110,6 @@ async function handleLogin(email, password, role) {
 function getDashboardUrl(role) {
   const routes = {
     pembeli: '/pages/client/dashboard.html',
-    mitra:   '/pages/mitra/dashboard.html',
     admin:   '/pages/admin/dashboard.html',
   };
   return routes[role] || '/pages/auth/login.html';

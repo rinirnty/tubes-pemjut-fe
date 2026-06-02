@@ -436,7 +436,7 @@ tr:hover td { background: rgba(247,242,232,.6); }
       </div>
       <table>
         <thead><tr><th>Nama</th><th>Toko</th><th>Daftar</th><th>Aksi</th></tr></thead>
-        <tbody id="pending-mitra"></tbody>
+
       </table>
     </div>
 
@@ -500,13 +500,6 @@ acts.forEach(a => {
 });
 
 // ── PENDING MITRA
-const mitras = [
-  {nama:'Pak Darmawan',toko:'Toko Makmur Jaya',tgl:'19 Mei 2025'},
-  {nama:'Bu Lestari',toko:'UD Sumber Pangan',tgl:'18 Mei 2025'},
-  {nama:'CV Agri Nusantara',toko:'CV Agri Nusantara',tgl:'17 Mei 2025'},
-];
-const pm = document.getElementById('pending-mitra');
-mitras.forEach(m => {
   pm.innerHTML += `<tr>
     <td><div style="display:flex;align-items:center;gap:.6rem"><div class="avatar" style="background:var(--cream2)">🤝</div>${m.nama}</div></td>
     <td>${m.toko}</td>
@@ -518,7 +511,6 @@ mitras.forEach(m => {
       </div>
     </td>
   </tr>`;
-});
 
 function verif(btn, nama) {
   const row = btn.closest('tr');

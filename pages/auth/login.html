@@ -278,7 +278,6 @@
     <!-- Role Tabs -->
     <div class="role-tabs">
       <button class="rtab active" data-role="pembeli" onclick="setRole('pembeli',this)">🛒 Pembeli</button>
-      <button class="rtab" data-role="mitra" onclick="setRole('mitra',this)">🤝 Mitra</button>
       <button class="rtab" data-role="admin" onclick="setRole('admin',this)">⚙️ Admin</button>
     </div>
 
@@ -426,12 +425,11 @@
     btn.classList.add('active');
 
     // ubah visual kiri sesuai role
-    const visuals = { pembeli:'🍚', mitra:'🌾', admin:'⚙️' };
+    const visuals = { pembeli:'🍚', admin:'⚙️' };
     document.querySelector('.left-visual').textContent = visuals[role];
 
     const titles = {
       pembeli: 'Selamat Datang <em>Kembali</em>',
-      mitra:   'Dashboard <em>Mitra</em>',
       admin:   'Panel <em>Admin</em>',
     };
     document.querySelector('.left-title').innerHTML = titles[role];
@@ -440,14 +438,7 @@
     clearAlerts();
   }
 
-  function toggleTokoField() {
-    const tokoField = document.getElementById('field-toko');
-    if (!isLogin && currentRole === 'mitra') {
-      tokoField.style.display = 'block';
-    } else {
-      tokoField.style.display = 'none';
-    }
-  }
+  
 
   // ── TOGGLE PASSWORD VISIBILITY
   function togglePw(id, btn) {
@@ -526,14 +517,6 @@
       const phoneOk = /^08[0-9]{8,11}$/.test(phone);
       showErr('err-phone', !phoneOk); markField('phone', !phoneOk);
       if (!phoneOk) ok = false;
-
-      // toko (mitra)
-      if (currentRole === 'mitra') {
-        const toko = document.getElementById('toko').value.trim();
-        const tokoOk = toko.length >= 2;
-        showErr('err-toko', !tokoOk); markField('toko', !tokoOk);
-        if (!tokoOk) ok = false;
-      }
     }
     return ok;
   }
@@ -572,7 +555,6 @@
       setTimeout(() => {
         const routes = {
           pembeli: '../client/dashboard.html',
-          mitra:   '../mitra/dashboard.html',
           admin:   '../admin/dashboard.html',
         };
         window.location.href = routes[currentRole] || '#';

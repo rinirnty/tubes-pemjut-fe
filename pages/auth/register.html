@@ -72,9 +72,6 @@
     .error-msg{font-size:.72rem;color:var(--error);margin-top:.3rem;display:none;align-items:center;gap:.25rem;}
     .error-msg.show{display:flex;}
 
-    /* mitra only */
-    .mitra-only{display:none;}
-
     /* pw strength */
     .pw-strength{margin-top:.4rem;}
     .pw-bar{height:3px;border-radius:99px;background:var(--cream2);overflow:hidden;margin-bottom:.25rem;}
@@ -128,7 +125,7 @@
   <div class="role-benefits">
     <div class="rb-tabs">
       <button class="rb-tab active" onclick="switchBenefit('pembeli',this)">🛒 Pembeli</button>
-      <button class="rb-tab" onclick="switchBenefit('mitra',this)">🤝 Mitra</button>
+
     </div>
     <div class="rb-content active" id="rb-pembeli">
       <div class="rb-item"><span class="rb-check">✓</span><span>Akses katalog 50+ produk bahan pokok</span></div>
@@ -136,13 +133,6 @@
       <div class="rb-item"><span class="rb-check">✓</span><span>Lacak pengiriman real-time</span></div>
       <div class="rb-item"><span class="rb-check">✓</span><span>Riwayat & invoice otomatis</span></div>
       <div class="rb-item"><span class="rb-check">✓</span><span>Pesan ulang 1 klik</span></div>
-    </div>
-    <div class="rb-content" id="rb-mitra">
-      <div class="rb-item"><span class="rb-check">✓</span><span>Komisi otomatis per transaksi</span></div>
-      <div class="rb-item"><span class="rb-check">✓</span><span>Dashboard penjualan pribadi</span></div>
-      <div class="rb-item"><span class="rb-check">✓</span><span>QR pembayaran milik sendiri</span></div>
-      <div class="rb-item"><span class="rb-check">✓</span><span>Kelola produk sendiri</span></div>
-      <div class="rb-item"><span class="rb-check">✓</span><span>Laporan pendapatan bulanan</span></div>
     </div>
   </div>
 </div>
@@ -160,7 +150,6 @@
     <!-- Role Tabs -->
     <div class="role-tabs">
       <button class="rtab active" onclick="setRole('pembeli',this)">🛒 Daftar sebagai Pembeli</button>
-      <button class="rtab" onclick="setRole('mitra',this)">🤝 Daftar sebagai Mitra</button>
     </div>
 
     <div class="alert error" id="alert-error">⚠️ <span id="alert-msg"></span></div>
@@ -186,16 +175,6 @@
           </div>
           <div class="error-msg" id="err-lname">⚠ Wajib diisi</div>
         </div>
-      </div>
-
-      <!-- Mitra only: Nama Toko -->
-      <div class="field mitra-only" id="field-toko">
-        <label>Nama Toko / Usaha</label>
-        <div class="input-wrap">
-          <span class="icon">🏪</span>
-          <input type="text" id="toko" placeholder="Nama toko atau usaha Anda"/>
-        </div>
-        <div class="error-msg" id="err-toko">⚠ Nama toko wajib diisi</div>
       </div>
 
       <!-- Email -->
@@ -226,30 +205,6 @@
           <input type="text" id="alamat" placeholder="Jl. Contoh No. 1, Kota"/>
         </div>
         <div class="error-msg" id="err-alamat">⚠ Alamat wajib diisi</div>
-      </div>
-
-      <!-- Mitra only: Bank & Rekening -->
-      <div class="field-row mitra-only" id="field-bank">
-        <div class="field">
-          <label>Nama Bank</label>
-          <div class="input-wrap">
-            <span class="icon">🏦</span>
-            <select id="bank">
-              <option value="">Pilih bank</option>
-              <option>BCA</option><option>BRI</option><option>BNI</option>
-              <option>Mandiri</option><option>BSI</option><option>DANA</option><option>OVO</option>
-            </select>
-          </div>
-          <div class="error-msg" id="err-bank">⚠ Pilih bank</div>
-        </div>
-        <div class="field">
-          <label>No. Rekening</label>
-          <div class="input-wrap">
-            <span class="icon">💳</span>
-            <input type="text" id="rekening" placeholder="No. rekening"/>
-          </div>
-          <div class="error-msg" id="err-rekening">⚠ Wajib diisi</div>
-        </div>
       </div>
 
       <!-- Password -->
@@ -299,32 +254,6 @@
 <script>
   let currentRole = 'pembeli';
 
-  // cek query param ?role=mitra dari index.html
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('role') === 'mitra') {
-    setRole('mitra', document.querySelectorAll('.rtab')[1]);
-    switchBenefit('mitra', document.querySelectorAll('.rb-tab')[1]);
-  }
-
-  function setRole(role, btn) {
-    currentRole = role;
-    document.querySelectorAll('.rtab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    const isMitra = role === 'mitra';
-    document.querySelectorAll('.mitra-only').forEach(el => el.style.display = isMitra ? 'block' : 'none');
-    document.getElementById('field-bank').style.display = isMitra ? 'grid' : 'none';
-
-    document.getElementById('btn-label').textContent = isMitra ? '✅ Daftar sebagai Mitra' : '✅ Buat Akun Pembeli';
-    document.getElementById('role-label-text').textContent = isMitra ? 'Mitra Reseller' : 'Pembeli';
-
-    // update kiri
-    document.getElementById('left-visual').textContent = isMitra ? '🤝' : '🛒';
-    document.getElementById('left-title').innerHTML = isMitra ? 'Bergabung sebagai <em>Mitra</em>' : 'Bergabung sebagai <em>Pembeli</em>';
-    document.getElementById('left-desc').textContent = isMitra
-      ? 'Jual bahan pokok kami dan dapatkan komisi dari setiap transaksi yang berhasil.'
-      : 'Nikmati kemudahan memesan beras, ketan, ubi, dan komoditas pokok langsung dari mitra terpercaya.';
-
     // sync benefit tabs
     const rbBtns = document.querySelectorAll('.rb-tab');
     rbBtns.forEach(b => b.classList.remove('active'));
@@ -333,7 +262,6 @@
     document.getElementById('rb-' + role).classList.add('active');
 
     clearAlerts();
-  }
 
   function switchBenefit(role, btn) {
     document.querySelectorAll('.rb-tab').forEach(b => b.classList.remove('active'));
@@ -403,20 +331,6 @@
     show('err-konfirm', kf !== pw); mark('konfirm', kf !== pw);
     if (kf !== pw) ok = false;
 
-    if (currentRole === 'mitra') {
-      const toko = document.getElementById('toko').value.trim();
-      show('err-toko', toko.length < 2); mark('toko', toko.length < 2);
-      if (toko.length < 2) ok = false;
-
-      const bank = document.getElementById('bank').value;
-      show('err-bank', !bank); mark('bank', !bank);
-      if (!bank) ok = false;
-
-      const rek = document.getElementById('rekening').value.trim();
-      show('err-rekening', rek.length < 5); mark('rekening', rek.length < 5);
-      if (rek.length < 5) ok = false;
-    }
-
     const terms = document.getElementById('terms').checked;
     show('err-terms', !terms);
     if (!terms) ok = false;
@@ -434,11 +348,6 @@
     await new Promise(r => setTimeout(r, 1800));
     btn.classList.remove('loading');
 
-    document.getElementById('alert-ok').textContent =
-      currentRole === 'mitra'
-        ? 'Pendaftaran mitra berhasil! Admin akan memverifikasi akun Anda. Silakan cek email.'
-        : 'Akun berhasil dibuat! Silakan masuk dengan akun baru Anda.';
-    document.getElementById('alert-success').classList.add('show');
 
     setTimeout(() => { window.location.href = 'login.html'; }, 2500);
   });

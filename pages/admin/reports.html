@@ -489,13 +489,6 @@ komisis.forEach(k => {
 // TRANSAKSI TABLE
 const transaksis = [
   {inv:'#INV-0284',tgl:'19 Mei 2025',buyer:'Ibu Ratna',mitra:'Pak Hendra',prod:'Beras Pandan 5kg x2',total:'Rp 130.000',komisi:'Rp 13.000',status:'selesai'},
-  {inv:'#INV-0283',tgl:'19 Mei 2025',buyer:'Pak Darto',mitra:'Pak Darto',prod:'Ubi Jalar 10kg',total:'Rp 80.000',komisi:'Rp 8.000',status:'dikirim'},
-  {inv:'#INV-0282',tgl:'18 Mei 2025',buyer:'Bu Siti',mitra:'Bu Siti',prod:'Beras Ketan 3kg',total:'Rp 84.000',komisi:'Rp 8.400',status:'diproses'},
-  {inv:'#INV-0281',tgl:'18 Mei 2025',buyer:'Pak Budi',mitra:'Pak Budi',prod:'Singkong 20kg',total:'Rp 100.000',komisi:'Rp 10.000',status:'pending'},
-  {inv:'#INV-0280',tgl:'17 Mei 2025',buyer:'CV Maju',mitra:'Bu Dewi',prod:'Beras IR64 50kg x2',total:'Rp 540.000',komisi:'Rp 54.000',status:'selesai'},
-  {inv:'#INV-0279',tgl:'17 Mei 2025',buyer:'Bu Lestari',mitra:'CV Agri',prod:'Beras Merah 5kg',total:'Rp 110.000',komisi:'Rp 11.000',status:'dikirim'},
-  {inv:'#INV-0278',tgl:'16 Mei 2025',buyer:'Pak Ahmad',mitra:'Bu Dewi',prod:'Ketan Hitam 2kg',total:'Rp 64.000',komisi:'Rp 6.400',status:'selesai'},
-  {inv:'#INV-0277',tgl:'16 Mei 2025',buyer:'Ibu Dewi',mitra:'Pak Budi',prod:'Ubi Kayu 15kg',total:'Rp 75.000',komisi:'Rp 0',status:'dibatalkan'},
 ];
 const sbadge = {selesai:'badge-green',dikirim:'badge-blue',diproses:'badge-gold',pending:'badge-gray',dibatalkan:'badge-red'};
 const tt = document.getElementById('transaksi-tbody');
@@ -504,7 +497,6 @@ transaksis.forEach(t => {
     <td><span style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--brown)">${t.inv}</span></td>
     <td style="font-size:.78rem;color:var(--muted)">${t.tgl}</td>
     <td style="font-size:.85rem">${t.buyer}</td>
-    <td style="font-size:.82rem">${t.mitra}</td>
     <td style="font-size:.8rem;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.prod}</td>
     <td style="font-weight:600">${t.total}</td>
     <td style="font-family:'DM Mono',monospace;font-size:.82rem;color:var(--green)">${t.komisi}</td>

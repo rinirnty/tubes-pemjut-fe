@@ -307,7 +307,7 @@ tr:hover td { background: rgba(247,242,232,.6); }
     <div style="display:flex;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap" class="reveal">
       <button class="filter-btn active" onclick="switchTab('semua',this)">Semua Pengguna</button>
       <button class="filter-btn" onclick="switchTab('pembeli',this)">🛒 Pembeli</button>
-      <button class="filter-btn" onclick="switchTab('mitra',this)">🤝 Mitra</button>
+
       <button class="filter-btn" onclick="switchTab('pending',this)">⏳ Pending Verifikasi</button>
       <button class="filter-btn" onclick="switchTab('blokir',this)">🚫 Diblokir</button>
     </div>
@@ -350,14 +350,10 @@ tr:hover td { background: rgba(247,242,232,.6); }
 <script>
 const users = [
   {name:'Ibu Ratna Wulandari',email:'ratna@email.com',phone:'081234567890',role:'pembeli',joined:'10 Jan 2025',orders:24,status:'aktif',avatar:'👩'},
-  {name:'Pak Darmawan',email:'darmawan@email.com',phone:'082345678901',role:'mitra',toko:'Toko Makmur Jaya',joined:'5 Feb 2025',orders:0,status:'aktif',komisi:'Rp 2.4jt',avatar:'👨‍💼'},
+ 
   {name:'Bu Siti Aminah',email:'siti@email.com',phone:'083456789012',role:'pembeli',joined:'20 Feb 2025',orders:8,status:'aktif',avatar:'👩‍💼'},
   {name:'Pak Hendra Wijaya',email:'hendra@email.com',phone:'084567890123',role:'mitra',toko:'UD Hendra Pangan',joined:'1 Mar 2025',orders:0,status:'aktif',komisi:'Rp 4.1jt',avatar:'👨'},
-  {name:'CV Agri Nusantara',email:'agri@email.com',phone:'085678901234',role:'mitra',toko:'CV Agri Nusantara',joined:'15 Mar 2025',orders:0,status:'aktif',komisi:'Rp 1.8jt',avatar:'🏢'},
   {name:'Pak Budi Santoso',email:'budi@email.com',phone:'086789012345',role:'pembeli',joined:'2 Apr 2025',orders:3,status:'aktif',avatar:'👨'},
-  {name:'Toko Sumber Makmur',email:'sumber@email.com',phone:'087890123456',role:'mitra',toko:'Toko Sumber Makmur',joined:'18 Mei 2025',orders:0,status:'pending',komisi:'Rp 0',avatar:'🏪'},
-  {name:'UD Berkah Pangan',email:'berkah@email.com',phone:'088901234567',role:'mitra',toko:'UD Berkah Pangan',joined:'19 Mei 2025',orders:0,status:'pending',komisi:'Rp 0',avatar:'🏬'},
-  {name:'Toko Jaya Abadi',email:'jaya@email.com',phone:'089012345678',role:'mitra',toko:'Toko Jaya Abadi',joined:'19 Mei 2025',orders:0,status:'pending',komisi:'Rp 0',avatar:'🏪'},
   {name:'Akun Spam',email:'spam@email.com',phone:'-',role:'pembeli',joined:'10 Mei 2025',orders:0,status:'blokir',avatar:'🚫'},
 ];
 
@@ -398,7 +394,7 @@ function renderUsers() {
         <td><span class="badge ${rbadge[u.role]}">${u.role}${u.toko?': '+u.toko:''}</span></td>
         <td style="font-size:.82rem">${u.phone}</td>
         <td style="font-size:.78rem;color:var(--muted)">${u.joined}</td>
-        <td style="text-align:center">${u.role==='mitra'?`<span style="font-size:.8rem;color:var(--green)">${u.komisi}</span>`:u.orders}</td>
+    
         <td><span class="badge ${sbadge[u.status]}">${u.status}</span></td>
         <td>
           <div style="display:flex;gap:.35rem">
@@ -434,19 +430,6 @@ function showUser(i) {
         <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">Bergabung</div>
         <div style="font-weight:600;font-size:.88rem">${u.joined}</div>
       </div>
-      ${u.role==='mitra'?`
-      <div style="padding:.85rem;background:var(--cream);border-radius:10px">
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">Nama Toko</div>
-        <div style="font-weight:600;font-size:.88rem">${u.toko}</div>
-      </div>
-      <div style="padding:.85rem;background:var(--cream);border-radius:10px">
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">Total Komisi</div>
-        <div style="font-weight:700;font-size:.95rem;color:var(--green)">${u.komisi}</div>
-      </div>`:
-      `<div style="padding:.85rem;background:var(--cream);border-radius:10px">
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.25rem">Total Pesanan</div>
-        <div style="font-weight:600;font-size:.88rem">${u.orders} pesanan</div>
-      </div>`}
     </div>`;
   const footer = document.getElementById('user-modal-footer');
   footer.innerHTML = `<button class="btn btn-outline" onclick="closeUserModal()">Tutup</button>
