@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import api from "../../utils/api";
 
 function Register() {
-  const [role, setRole] = useState('pembeli');
+  const navigate = useNavigate();
   const [form, setForm] = useState({
-    fname: '', lname: '', email: '', phone: '', address: '',
-    rekening: '', password: '', confirm: '', terms: false
+    fname: '', lname: '', email: '', phone: '', address: '', password: '', confirm: '', terms: false
   });
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -20,7 +20,7 @@ function Register() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    
+
     if (name === 'password') {
       checkStrength(value);
     }
@@ -32,7 +32,7 @@ function Register() {
     if (/[A-Z]/.test(val)) score++;
     if (/[0-9]/.test(val)) score++;
     if (/[^A-Za-z0-9]/.test(val)) score++;
-    
+
     const levels = [
       { width: '0%', bg: 'transparent', label: '' },
       { width: '25%', bg: '#E74C3C', label: 'Lemah' },
@@ -53,11 +53,10 @@ function Register() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = true;
     if (!/^08[0-9]{8,11}$/.test(form.phone)) newErrors.phone = true;
     if (form.address.length < 5) newErrors.address = true;
-    if (role === 'mitra' && form.rekening.length < 5) newErrors.rekening = true;
     if (form.password.length < 8) newErrors.password = true;
     if (form.confirm !== form.password) newErrors.confirm = true;
     if (!form.terms) newErrors.terms = true;
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -66,24 +65,41 @@ function Register() {
     e.preventDefault();
     setSuccess(false);
     setErrors({});
-    
+
     if (!validate()) return;
-    
+
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1800));
-    setLoading(false);
-    setSuccess(true);
-    
-    setTimeout(() => {
-      window.location.href = '/login';
-    }, 2500);
+    try {
+      const payload = {
+        nama: `${form.fname} ${form.lname}`.trim(),
+        email: form.email,
+        password: form.password,
+        telpon: form.phone,
+        alamat: form.address,
+        role: 'pembeli',
+      };
+
+      await api.post('/auth/register', payload);
+
+      setLoading(false);
+      setSuccess(true);
+
+      setTimeout(() => {
+        navigate('/login');
+      }, 2500);
+    } catch (err) {
+      setLoading(false);
+      setErrors({ apiError: err.response?.data?.message || 'Registrasi gagal. Silakan coba lagi.' });
+    }
   };
 
-  const getVisual = () => role === 'pembeli' ? '🛒' : '🤝';
-  const getTitle = () => role === 'pembeli' ? 'Bergabung sebagai <em>Pembeli</em>' : 'Bergabung sebagai <em>Mitra</em>';
-  const getDesc = () => role === 'pembeli' 
-    ? 'Nikmati kemudahan memesan beras, ketan, ubi, dan komoditas pokok langsung dari mitra terpercaya.'
-    : 'Daftarkan toko kamu dan dapatkan komisi otomatis untuk setiap transaksi yang berhasil.';
+  const getVisual = () => '🛒';
+
+  const getTitle = () =>
+    'Bergabung sebagai <em>Pembeli</em>';
+
+  const getDesc = () =>
+    'Nikmati kemudahan memesan beras, ketan, ubi, dan komoditas pokok langsung dari penjual terpercaya.';
 
   return (
     <div className="register-page" style={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
@@ -101,23 +117,13 @@ function Register() {
         <p className="left-desc" style={{ color: 'rgba(255,255,255,.72)', fontSize: '.9rem', lineHeight: 1.8, maxWidth: '360px', position: 'relative', zIndex: 1, marginBottom: '2rem' }}>{getDesc()}</p>
 
         <div className="role-benefits" style={{ position: 'relative', zIndex: 1, width: '100%' }}>
-          {role === 'pembeli' ? (
-            <div id="rb-pembeli">
-              <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Akses katalog 50+ produk bahan pokok</span></div>
-              <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Bayar mudah via QRIS</span></div>
-              <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Lacak pengiriman real-time</span></div>
-              <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Riwayat & invoice otomatis</span></div>
-              <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Pesan ulang 1 klik</span></div>
-            </div>
-          ) : (
-            <div className="rb-content" id="rb-mitra">
-              <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Komisi otomatis per transaksi</span></div>
-              <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Dashboard penjualan pribadi</span></div>
-              <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>QR pembayaran milik sendiri</span></div>
-              <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Kelola produk sendiri</span></div>
-              <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Laporan pendapatan bulanan</span></div>
-            </div>
-          )}
+          <div id="rb-pembeli">
+            <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Akses katalog 50+ produk bahan pokok</span></div>
+            <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Bayar mudah via QRIS</span></div>
+            <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Lacak pengiriman real-time</span></div>
+            <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Riwayat & invoice otomatis</span></div>
+            <div className="rb-item" style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '.65rem' }}><span className="rb-check" style={{ color: '#F0C55A', fontSize: '.9rem', flexShrink: 0 }}>✓</span><span style={{ fontSize: '.83rem', color: 'rgba(255,255,255,.82)', lineHeight: 1.5 }}>Pesan ulang 1 klik</span></div>
+          </div>
         </div>
       </div>
 
@@ -128,25 +134,26 @@ function Register() {
 
           <div className="form-header" style={{ marginBottom: '1.5rem' }}>
             <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.8rem', color: 'var(--text)', marginBottom: '.3rem' }}>Buat Akun</h1>
-            <p style={{ color: 'var(--muted)', fontSize: '.88rem' }}>Daftar gratis sebagai <strong>{role === 'pembeli' ? 'Pembeli' : 'Mitra'}</strong> atau <Link to="/login" style={{ color: 'var(--green)', fontWeight: 500, textDecoration: 'none' }}>masuk</Link> jika sudah punya akun.</p>
+            <p style={{ color: 'var(--muted)', fontSize: '.88rem' }}>Daftar gratis sebagai <strong>Pembeli</strong> atau <Link to="/login" style={{ color: 'var(--green)', fontWeight: 500, textDecoration: 'none' }}>masuk</Link> jika sudah punya akun.</p>
           </div>
 
           {/* Role Tabs */}
-          <div className="role-tabs" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '.5rem', marginBottom: '1.5rem', background: 'var(--cream2)', borderRadius: '14px', padding: '.4rem' }}>
-            <button className={`rtab ${role === 'pembeli' ? 'active' : ''}`} onClick={() => setRole('pembeli')} style={{ padding: '.6rem .5rem', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '.82rem', fontWeight: 500, color: role === 'pembeli' ? 'var(--brown)' : 'var(--muted)', background: role === 'pembeli' ? '#fff' : 'transparent', transition: 'all .2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.35rem' }}>🛒 Pembeli</button>
-            <button className={`rtab ${role === 'mitra' ? 'active' : ''}`} onClick={() => setRole('mitra')} style={{ padding: '.6rem .5rem', borderRadius: '10px', border: 'none', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '.82rem', fontWeight: 500, color: role === 'mitra' ? 'var(--brown)' : 'var(--muted)', background: role === 'mitra' ? '#fff' : 'transparent', transition: 'all .2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.35rem' }}>🤝 Mitra</button>
-          </div>
 
           {/* Role Info */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', padding: '.75rem 1rem', background: 'var(--cream2)', borderRadius: '12px', marginBottom: '1.5rem' }}>
             <span style={{ fontSize: '1.5rem' }}>{getVisual()}</span>
             <div>
-              <div style={{ fontWeight: 600, fontSize: '.88rem', color: 'var(--brown)' }}>Daftar sebagai {role === 'pembeli' ? 'Pembeli' : 'Mitra'}</div>
-              <div style={{ fontSize: '.75rem', color: 'var(--muted)' }}>{role === 'pembeli' ? 'Beli beras, ketan, dan ubi dari mitra terpercaya' : 'Jual produk kamu dan dapatkan komisi'}</div>
+              <div style={{ fontWeight: 600, fontSize: '.88rem', color: 'var(--brown)' }}>Daftar sebagai Pembeli</div>
+              <div style={{ fontSize: '.75rem', color: 'var(--muted)' }}>Beli beras, ketan, dan ubi dari penjual terpercaya</div>
             </div>
           </div>
 
           {/* Alerts */}
+          {errors.apiError && (
+            <div className="alert error" style={{ padding: '.8rem 1rem', borderRadius: '12px', fontSize: '.83rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '.6rem', background: '#FDECEA', color: 'var(--error)', border: '1px solid #FBBDBD' }}>
+              ⚠️ <span>{errors.apiError}</span>
+            </div>
+          )}
           {success && (
             <div className="alert success" style={{ padding: '.8rem 1rem', borderRadius: '12px', fontSize: '.83rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '.6rem', background: '#EAF6EA', color: 'var(--green)', border: '1px solid #A8DAA0' }}>
               ✅ <span>Akun berhasil dibuat! Silakan masuk dengan akun baru Anda.</span>
@@ -204,18 +211,6 @@ function Register() {
               <div className={`error-msg ${errors.address ? 'show' : ''}`} style={{ fontSize: '.72rem', color: 'var(--error)', marginTop: '.3rem', display: errors.address ? 'flex' : 'none', alignItems: 'center', gap: '.25rem' }}>⚠ Alamat wajib diisi</div>
             </div>
 
-            {/* Rekening (only for mitra) */}
-            {role === 'mitra' && (
-              <div className="field" style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '.8rem', fontWeight: 500, color: 'var(--brown)', marginBottom: '.4rem' }}>No. Rekening</label>
-                <div className="input-wrap" style={{ position: 'relative' }}>
-                  <span className="icon" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '.95rem', pointerEvents: 'none', color: 'var(--brown3)' }}>💳</span>
-                  <input type="text" name="rekening" value={form.rekening} onChange={handleChange} placeholder="No. rekening" style={{ width: '100%', padding: '.7rem .9rem .7rem 2.5rem', border: `1.5px solid ${errors.rekening ? 'var(--error)' : 'var(--border)'}`, borderRadius: '12px', fontFamily: "'DM Sans', sans-serif", fontSize: '.88rem', color: 'var(--text)', background: '#fff', outline: 'none', transition: 'border-color .2s,box-shadow .2s' }} />
-                </div>
-                <div className={`error-msg ${errors.rekening ? 'show' : ''}`} style={{ fontSize: '.72rem', color: 'var(--error)', marginTop: '.3rem', display: errors.rekening ? 'flex' : 'none', alignItems: 'center', gap: '.25rem' }}>⚠ Wajib diisi</div>
-              </div>
-            )}
-
             {/* Password */}
             <div className="field" style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', fontSize: '.8rem', fontWeight: 500, color: 'var(--brown)', marginBottom: '.4rem' }}>Password</label>
@@ -267,7 +262,7 @@ function Register() {
           </form>
         </div>
       </div>
-      
+
       <style>{`
         @keyframes float {
           0%,100% { transform: translateY(0) }

@@ -2,137 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-
-const KATEGORI = [
-  { emoji: "🌾", name: "Semua", key: "semua" },
-  { emoji: "🍚", name: "Beras Putih", key: "Beras Putih" },
-  { emoji: "🌾", name: "Beras Ketan", key: "Beras Ketan" },
-  { emoji: "🍠", name: "Ubi Jalar", key: "Ubi Jalar" },
-  { emoji: "🟤", name: "Ubi Kayu", key: "Ubi Kayu" },
-  { emoji: "🌿", name: "Beras Merah", key: "Beras Merah" },
-];
-
-const PRODUK = [
-  {
-    id: 1,
-    emoji: "🍚",
-    badge: "terlaris",
-    cat: "Beras Putih",
-    name: "Beras Pandan Wangi",
-    varian: "Premium • Pulen & Wangi",
-    price: 13000,
-    priceStr: "Rp 65.000",
-    unit: "/5 kg",
-    bg: "#FFF8E8",
-    desc: "Beras premium pilihan petani lokal. Pulen, wangi, cocok untuk masakan sehari-hari.",
-  },
-  {
-    id: 2,
-    emoji: "🌾",
-    badge: "baru",
-    cat: "Beras Ketan",
-    name: "Beras Ketan Putih",
-    varian: "Super • Lengket Sempurna",
-    price: 28000,
-    priceStr: "Rp 28.000",
-    unit: "/kg",
-    bg: "#F0F8E8",
-    desc: "Beras ketan putih berkualitas tinggi. Cocok untuk lemper, bubur, dan kue tradisional.",
-  },
-  {
-    id: 3,
-    emoji: "🍠",
-    badge: "",
-    cat: "Ubi Jalar",
-    name: "Ubi Jalar Merah",
-    varian: "Manis • Segar dari Kebun",
-    price: 8000,
-    priceStr: "Rp 8.000",
-    unit: "/kg",
-    bg: "#FFF0E8",
-    desc: "Ubi jalar merah segar langsung dari kebun. Manis alami, cocok untuk kolak dan gorengan.",
-  },
-  {
-    id: 4,
-    emoji: "🌿",
-    badge: "",
-    cat: "Beras Merah",
-    name: "Beras Merah Organik",
-    varian: "Organik • Bebas Pestisida",
-    price: 22000,
-    priceStr: "Rp 22.000",
-    unit: "/kg",
-    bg: "#F0F5E8",
-    desc: "Beras merah organik bersertifikat. Kaya serat, cocok untuk diet sehat.",
-  },
-  {
-    id: 5,
-    emoji: "🟤",
-    badge: "promo",
-    cat: "Ubi Kayu",
-    name: "Singkong Segar",
-    varian: "Lokal • Manis & Empuk",
-    price: 5000,
-    priceStr: "Rp 5.000",
-    unit: "/kg",
-    bg: "#F5EDE0",
-    desc: "Singkong segar pilihan. Empuk, manis, bisa untuk tape, kolak, atau keripik.",
-  },
-  {
-    id: 6,
-    emoji: "🍚",
-    badge: "",
-    cat: "Beras Ketan",
-    name: "Beras Ketan Hitam",
-    varian: "Spesial • Kue & Bubur",
-    price: 32000,
-    priceStr: "Rp 32.000",
-    unit: "/kg",
-    bg: "#F0EEF8",
-    desc: "Beras ketan hitam pilihan untuk bubur ketan hitam dan kue tradisional Jawa.",
-  },
-  {
-    id: 7,
-    emoji: "🍚",
-    badge: "",
-    cat: "Beras Putih",
-    name: "Beras IR 64",
-    varian: "Medium • Harga Terjangkau",
-    price: 11000,
-    priceStr: "Rp 55.000",
-    unit: "/5 kg",
-    bg: "#FFF8E8",
-    desc: "Beras IR 64 pilihan keluarga. Harga terjangkau, kualitas terjamin.",
-  },
-  {
-    id: 8,
-    emoji: "🍠",
-    badge: "",
-    cat: "Ubi Jalar",
-    name: "Ubi Jalar Ungu",
-    varian: "Manis • Kaya Antioksidan",
-    price: 9000,
-    priceStr: "Rp 9.000",
-    unit: "/kg",
-    bg: "#F5E8FF",
-    desc: "Ubi jalar ungu kaya antioksidan. Warna cantik, rasa manis, cocok untuk es krim dan kue.",
-  },
-  {
-    id: 9,
-    emoji: "🌾",
-    badge: "",
-    cat: "Beras Putih",
-    name: "Beras Pera Lokal",
-    varian: "Lokal • Tidak Pulen",
-    price: 9600,
-    priceStr: "Rp 48.000",
-    unit: "/5 kg",
-    bg: "#FFF8E8",
-    desc: "Beras pera lokal, cocok untuk nasi goreng dan nasi uduk karena teksturnya yang padat.",
-  },
-];
+import api from "../../utils/api";
 
 function Catalog() {
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [currentKat, setCurrentKat] = useState("semua");
   const [currentView, setCurrentView] = useState("grid");
   const [searchQuery, setSearchQuery] = useState("");
@@ -144,6 +18,27 @@ function Catalog() {
   const revealRefs = useRef([]);
 
   useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [prodRes, catRes] = await Promise.all([
+        api.get("/products"),
+        api.get("/categories")
+      ]);
+
+      const prodData = Array.isArray(prodRes.data) ? prodRes.data : (prodRes.data.data || []);
+      const catData = Array.isArray(catRes.data) ? catRes.data : (catRes.data.data || []);
+
+      setProducts(prodData);
+      setCategories(catData);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 30);
     };
@@ -152,23 +47,25 @@ function Catalog() {
   }, []);
 
   const getFilteredProduk = () => {
-    let filtered = PRODUK.filter(
+    let filtered = products.filter(
       (p) =>
-        (currentKat === "semua" || p.cat === currentKat) &&
-        (p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.cat.toLowerCase().includes(searchQuery.toLowerCase())),
+        (currentKat === "semua" || p.Kategori?.nama === currentKat) &&
+        (p.nama?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.Kategori?.nama?.toLowerCase().includes(searchQuery.toLowerCase())),
     );
 
     if (sortBy === "price-asc") {
-      filtered.sort((a, b) => a.price - b.price);
+      filtered.sort((a, b) => a.harga - b.harga);
     } else if (sortBy === "price-desc") {
-      filtered.sort((a, b) => b.price - a.price);
+      filtered.sort((a, b) => b.harga - a.harga);
     } else if (sortBy === "name") {
-      filtered.sort((a, b) => a.name.localeCompare(b.name));
+      filtered.sort((a, b) => a.nama.localeCompare(b.nama));
     }
 
     return filtered;
   };
+
+  const filteredProduk = getFilteredProduk();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -188,7 +85,7 @@ function Catalog() {
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
-  }, [getFilteredProduk()]);
+  }, [filteredProduk]);
 
   const openModal = (produk) => {
     setSelectedProduk(produk);
@@ -210,15 +107,15 @@ function Catalog() {
     if (idx !== -1) {
       cart[idx].qty += qty;
     } else {
-      cart.push({ id: selectedProduk.id, name: selectedProduk.name, qty });
+      cart.push({ id: selectedProduk.id, name: selectedProduk.nama, harga: selectedProduk.harga, foto: selectedProduk.foto, qty });
     }
     localStorage.setItem("panenku_cart", JSON.stringify(cart));
     window.dispatchEvent(new CustomEvent("panenku-cart-updated"));
     closeModal();
-    alert(`${selectedProduk.name} (${qty}) ditambahkan ke keranjang!`);
+    alert(`${selectedProduk.nama} (${qty}) ditambahkan ke keranjang!`);
   };
 
-  const filteredProduk = getFilteredProduk();
+  const formatRupiah = (n) => "Rp " + Number(n).toLocaleString("id-ID");
 
   return (
     <div className="catalog-page">
@@ -297,7 +194,7 @@ function Catalog() {
             />
             <button
               className="btn btn-gold btn-lg"
-              onClick={() => {}}
+              onClick={() => { }}
               style={{
                 background: "var(--gold)",
                 color: "#fff",
@@ -329,11 +226,34 @@ function Catalog() {
             padding: ".5rem 0 1.5rem",
           }}
         >
-          {KATEGORI.map((kat, idx) => (
+          <button
+            className={`kat-pill ${currentKat === "semua" ? "active" : ""}`}
+            onClick={() => setCurrentKat("semua")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: ".5rem",
+              padding: ".5rem 1.1rem",
+              borderRadius: "999px",
+              border: "1.5px solid var(--border)",
+              background: currentKat === "semua" ? "var(--brown)" : "#fff",
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: ".82rem",
+              fontWeight: 500,
+              color: currentKat === "semua" ? "#fff" : "var(--muted)",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              transition: "all .2s",
+              flexShrink: 0,
+            }}
+          >
+            🌾 Semua
+          </button>
+          {categories.map((kat) => (
             <button
-              key={idx}
-              className={`kat-pill ${currentKat === kat.key ? "active" : ""}`}
-              onClick={() => setCurrentKat(kat.key)}
+              key={kat.id}
+              className={`kat-pill ${currentKat === kat.nama ? "active" : ""}`}
+              onClick={() => setCurrentKat(kat.nama)}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -341,18 +261,18 @@ function Catalog() {
                 padding: ".5rem 1.1rem",
                 borderRadius: "999px",
                 border: "1.5px solid var(--border)",
-                background: currentKat === kat.key ? "var(--brown)" : "#fff",
+                background: currentKat === kat.nama ? "var(--brown)" : "#fff",
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: ".82rem",
                 fontWeight: 500,
-                color: currentKat === kat.key ? "#fff" : "var(--muted)",
+                color: currentKat === kat.nama ? "#fff" : "var(--muted)",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
                 transition: "all .2s",
                 flexShrink: 0,
               }}
             >
-              {kat.emoji} {kat.name}
+              🌾 {kat.nama}
             </button>
           ))}
         </div>
@@ -452,151 +372,144 @@ function Catalog() {
               gap: "1.5rem",
             }}
           >
-            {filteredProduk.map((produk, idx) => (
-              <div
-                key={produk.id}
-                className="prod-card reveal"
-                ref={(el) => (revealRefs.current[idx] = el)}
-                onClick={() => openModal(produk)}
-                style={{
-                  background: "#fff",
-                  borderRadius: "20px",
-                  overflow: "hidden",
-                  border: "1px solid var(--border)",
-                  transition: "transform .3s,box-shadow .3s",
-                  cursor: "pointer",
-                }}
-              >
+            {filteredProduk.map((produk, idx) => {
+              const imageUrl = produk.foto ? `${import.meta.env.VITE_API_URL || 'http://localhost:5500/api'}/products/images/${produk.foto}` : null;
+              return (
                 <div
-                  className="prod-thumb"
+                  key={produk.id}
+                  className="prod-card reveal"
+                  ref={(el) => (revealRefs.current[idx] = el)}
+                  onClick={() => openModal(produk)}
                   style={{
-                    height: "160px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "5rem",
-                    position: "relative",
-                    background: produk.bg,
+                    background: "#fff",
+                    borderRadius: "20px",
+                    overflow: "hidden",
+                    border: "1px solid var(--border)",
+                    transition: "transform .3s,box-shadow .3s",
+                    cursor: "pointer",
                   }}
                 >
-                  {produk.badge && (
-                    <span
-                      className={`prod-badge ${produk.badge}`}
-                      style={{
-                        position: "absolute",
-                        top: "12px",
-                        left: "12px",
-                        fontSize: ".68rem",
-                        fontWeight: 700,
-                        padding: ".25rem .65rem",
-                        borderRadius: "999px",
-                        background:
-                          produk.badge === "terlaris"
-                            ? "var(--gold)"
-                            : produk.badge === "baru"
-                              ? "var(--green)"
-                              : "var(--red)",
-                        color: "#fff",
-                      }}
-                    >
-                      {produk.badge}
-                    </span>
-                  )}
-                  {produk.emoji}
-                </div>
-                <div className="prod-body" style={{ padding: "1.15rem" }}>
                   <div
-                    className="prod-cat"
+                    className="prod-thumb"
                     style={{
-                      fontSize: ".68rem",
-                      fontWeight: 700,
-                      letterSpacing: ".08em",
-                      textTransform: "uppercase",
-                      color: "var(--green2)",
-                      marginBottom: ".3rem",
-                    }}
-                  >
-                    {produk.cat}
-                  </div>
-                  <div
-                    className="prod-name"
-                    style={{
-                      fontWeight: 600,
-                      fontSize: ".95rem",
-                      marginBottom: ".2rem",
-                      color: "var(--text)",
-                    }}
-                  >
-                    {produk.name}
-                  </div>
-                  <div
-                    className="prod-var"
-                    style={{
-                      fontSize: ".78rem",
-                      color: "var(--muted)",
-                      marginBottom: ".5rem",
-                    }}
-                  >
-                    {produk.varian}
-                  </div>
-                  <div
-                    className="prod-footer"
-                    style={{
+                      height: "160px",
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "space-between",
+                      justifyContent: "center",
+                      fontSize: "5rem",
+                      position: "relative",
+                      background: '#FFF8E8',
+                      overflow: 'hidden'
                     }}
                   >
-                    <div>
-                      <div
-                        className="prod-price"
+                    {imageUrl ? (
+                      <img src={imageUrl} alt={produk.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      "🌾"
+                    )}
+                    {produk.stok < 20 && produk.stok > 0 && (
+                      <span
                         style={{
-                          fontFamily: "'Playfair Display', serif",
-                          fontSize: "1.1rem",
+                          position: "absolute",
+                          top: "12px",
+                          left: "12px",
+                          fontSize: ".68rem",
                           fontWeight: 700,
-                          color: "var(--brown)",
+                          padding: ".25rem .65rem",
+                          borderRadius: "999px",
+                          background: "var(--gold)",
+                          color: "#fff",
                         }}
                       >
-                        {produk.priceStr}
-                      </div>
-                      <div
-                        className="prod-unit"
-                        style={{
-                          fontSize: ".7rem",
-                          color: "var(--muted)",
-                          marginTop: ".1rem",
-                        }}
-                      >
-                        {produk.unit}
-                      </div>
-                    </div>
-                    <button
-                      className="prod-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openModal(produk);
-                      }}
+                        Stok Menipis
+                      </span>
+                    )}
+                  </div>
+                  <div className="prod-body" style={{ padding: "1.15rem" }}>
+                    <div
+                      className="prod-cat"
                       style={{
-                        width: "36px",
-                        height: "36px",
-                        borderRadius: "50%",
-                        background: "var(--brown)",
-                        color: "#fff",
-                        border: "none",
-                        fontSize: "1.2rem",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        transition: "all .2s",
+                        fontSize: ".68rem",
+                        fontWeight: 700,
+                        letterSpacing: ".08em",
+                        textTransform: "uppercase",
+                        color: "var(--green2)",
+                        marginBottom: ".3rem",
                       }}
                     >
-                      +
-                    </button>
+                      {produk.Kategori?.nama}
+                    </div>
+                    <div
+                      className="prod-name"
+                      style={{
+                        fontWeight: 600,
+                        fontSize: ".95rem",
+                        marginBottom: ".2rem",
+                        color: "var(--text)",
+                      }}
+                    >
+                      {produk.nama}
+                    </div>
+                    <div
+                      className="prod-footer"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginTop: "1rem"
+                      }}
+                    >
+                      <div>
+                        <div
+                          className="prod-price"
+                          style={{
+                            fontFamily: "'Playfair Display', serif",
+                            fontSize: "1.1rem",
+                            fontWeight: 700,
+                            color: "var(--brown)",
+                          }}
+                        >
+                          {formatRupiah(produk.harga)}
+                        </div>
+                        <div
+                          className="prod-unit"
+                          style={{
+                            fontSize: ".7rem",
+                            color: "var(--muted)",
+                            marginTop: ".1rem",
+                          }}
+                        >
+                          Stok: {produk.stok}
+                        </div>
+                      </div>
+                      <button
+                        className="prod-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openModal(produk);
+                        }}
+                        style={{
+                          width: "36px",
+                          height: "36px",
+                          borderRadius: "50%",
+                          background: "var(--brown)",
+                          color: "#fff",
+                          border: "none",
+                          fontSize: "1.2rem",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "all .2s",
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         ) : (
           <div
@@ -674,22 +587,17 @@ function Catalog() {
                         gap: ".75rem",
                       }}
                     >
-                      <span style={{ fontSize: "2rem" }}>{produk.emoji}</span>
+                      <span style={{ fontSize: "2rem" }}>🌾</span>
                       <div>
                         <div style={{ fontWeight: 600, fontSize: ".9rem" }}>
-                          {produk.name}
-                        </div>
-                        <div
-                          style={{ fontSize: ".75rem", color: "var(--muted)" }}
-                        >
-                          {produk.varian}
+                          {produk.nama}
                         </div>
                       </div>
                     </td>
                     <td
                       style={{ padding: ".85rem 1.25rem", fontSize: ".85rem" }}
                     >
-                      {produk.cat}
+                      {produk.Kategori?.nama}
                     </td>
                     <td
                       style={{
@@ -699,16 +607,17 @@ function Catalog() {
                         color: "var(--brown)",
                       }}
                     >
-                      {produk.priceStr}
+                      {formatRupiah(produk.harga)}
                       <span
                         style={{
                           fontSize: ".7rem",
                           color: "var(--muted)",
                           fontFamily: "'DM Sans', sans-serif",
                           fontWeight: 400,
+                          display: "block"
                         }}
                       >
-                        {produk.unit}
+                        Stok: {produk.stok}
                       </span>
                     </td>
                     <td style={{ padding: ".85rem 1.25rem" }}>
@@ -767,17 +676,6 @@ function Catalog() {
             }}
           >
             1
-          </button>
-          <button
-            style={{
-              padding: ".5rem 1rem",
-              borderRadius: "10px",
-              border: "1.5px solid var(--border)",
-              background: "#fff",
-              cursor: "pointer",
-            }}
-          >
-            2
           </button>
           <button
             style={{
@@ -852,10 +750,15 @@ function Catalog() {
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: "7rem",
-                background: selectedProduk.bg,
+                background: '#FFF8E8',
+                overflow: 'hidden'
               }}
             >
-              {selectedProduk.emoji}
+              {selectedProduk.foto ? (
+                <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:5500/api'}/products/images/${selectedProduk.foto}`} alt={selectedProduk.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                "🌾"
+              )}
             </div>
             <div className="modal-body" style={{ padding: "1.75rem" }}>
               <div
@@ -868,7 +771,7 @@ function Catalog() {
                   marginBottom: ".3rem",
                 }}
               >
-                {selectedProduk.cat}
+                {selectedProduk.Kategori?.nama}
               </div>
               <div
                 style={{
@@ -878,26 +781,7 @@ function Catalog() {
                   marginBottom: ".3rem",
                 }}
               >
-                {selectedProduk.name}
-              </div>
-              <div
-                style={{
-                  fontSize: ".82rem",
-                  color: "var(--muted)",
-                  marginBottom: ".75rem",
-                }}
-              >
-                {selectedProduk.varian}
-              </div>
-              <div
-                style={{
-                  fontSize: ".83rem",
-                  color: "var(--text)",
-                  lineHeight: 1.7,
-                  marginBottom: "1rem",
-                }}
-              >
-                {selectedProduk.desc}
+                {selectedProduk.nama}
               </div>
               <div
                 style={{
@@ -905,6 +789,7 @@ function Catalog() {
                   alignItems: "center",
                   justifyContent: "space-between",
                   marginBottom: ".5rem",
+                  marginTop: "1rem"
                 }}
               >
                 <div
@@ -915,10 +800,10 @@ function Catalog() {
                     color: "var(--brown)",
                   }}
                 >
-                  {selectedProduk.priceStr}
+                  {formatRupiah(selectedProduk.harga)}
                 </div>
                 <span style={{ fontSize: ".78rem", color: "var(--muted)" }}>
-                  {selectedProduk.unit}
+                  Stok: {selectedProduk.stok}
                 </span>
               </div>
               <div
@@ -973,15 +858,6 @@ function Catalog() {
                 >
                   +
                 </button>
-                <span
-                  style={{
-                    fontSize: ".78rem",
-                    color: "var(--muted)",
-                    marginLeft: ".25rem",
-                  }}
-                >
-                  {selectedProduk.unit}
-                </span>
               </div>
               <div
                 style={{ display: "flex", gap: ".75rem", marginTop: ".5rem" }}

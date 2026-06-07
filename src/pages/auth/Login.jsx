@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import api from "../../utils/api";
 
 const Login = () => {
   const [currentRole, setCurrentRole] = useState("pembeli");
@@ -44,27 +45,31 @@ const Login = () => {
 
     setLoading(true);
 
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1500));
+    try {
+      const response = await api.post("/auth/login", { email, password });
+      const { token } = response.data.data;
+      localStorage.setItem("token", token);
 
-    setLoading(false);
+      // Get profile to check role
+      const profileRes = await api.get("/auth/me");
+      const role = profileRes.data.data.role;
 
-    if (email === "salah@test.com") {
-      setErrorMsg("Email atau password salah. Coba lagi.");
+      setLoading(false);
+      setSuccessMsg(`Login berhasil! Mengarahkan...`);
+      setAlertSuccess(true);
+
+      setTimeout(() => {
+        const routes = {
+          pembeli: "/client/dashboard",
+          admin: "/admin/dashboard",
+        };
+        navigate(routes[role] || "/");
+      }, 1200);
+    } catch (err) {
+      setLoading(false);
+      setErrorMsg(err.response?.data?.message || "Email atau password salah. Coba lagi.");
       setAlertError(true);
-      return;
     }
-
-    setSuccessMsg(`Login sebagai ${currentRole} berhasil! Mengarahkan...`);
-    setAlertSuccess(true);
-
-    setTimeout(() => {
-      const routes = {
-        pembeli: "/client/dashboard",
-        admin: "/admin/dashboard",
-      };
-      navigate(routes[currentRole] || "/");
-    }, 1200);
   };
 
   return (
@@ -318,72 +323,6 @@ const Login = () => {
                 Daftar sekarang
               </Link>
             </p>
-          </div>
-
-          {/* Role Tabs */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: ".5rem",
-              marginBottom: "2rem",
-              background: "var(--cream2)",
-              borderRadius: "14px",
-              padding: ".4rem",
-            }}
-          >
-            <button
-              style={{
-                padding: ".6rem .5rem",
-                borderRadius: "10px",
-                border: "none",
-                cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: ".82rem",
-                fontWeight: "500",
-                color:
-                  currentRole === "pembeli" ? "var(--brown)" : "var(--muted)",
-                background: currentRole === "pembeli" ? "#fff" : "transparent",
-                transition: "all .2s",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: ".35rem",
-                boxShadow:
-                  currentRole === "pembeli"
-                    ? "0 2px 10px rgba(92,61,30,.12)"
-                    : "none",
-              }}
-              onClick={() => setCurrentRole("pembeli")}
-            >
-              🛒 Pembeli
-            </button>
-            <button
-              style={{
-                padding: ".6rem .5rem",
-                borderRadius: "10px",
-                border: "none",
-                cursor: "pointer",
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: ".82rem",
-                fontWeight: "500",
-                color:
-                  currentRole === "admin" ? "var(--brown)" : "var(--muted)",
-                background: currentRole === "admin" ? "#fff" : "transparent",
-                transition: "all .2s",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: ".35rem",
-                boxShadow:
-                  currentRole === "admin"
-                    ? "0 2px 10px rgba(92,61,30,.12)"
-                    : "none",
-              }}
-              onClick={() => setCurrentRole("admin")}
-            >
-              ⚙️ Admin
-            </button>
           </div>
 
           {/* Alert */}

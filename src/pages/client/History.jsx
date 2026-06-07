@@ -1,82 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import SidebarClient from "../../components/SidebarClient";
-
-const orders = [
-  {
-    inv: "#INV-0284",
-    prod: "Beras Pandan Wangi 5kg x2",
-    total: "Rp 130.000",
-    pay: "lunas",
-    status: "selesai",
-    tgl: "19 Mei 2025",
-    items: [
-      { emoji: "🍚", name: "Beras Pandan Wangi", qty: 2, harga: "Rp 65.000" },
-    ],
-  },
-  {
-    inv: "#INV-0283",
-    prod: "Ubi Jalar Merah 10kg",
-    total: "Rp 80.000",
-    pay: "lunas",
-    status: "dikirim",
-    tgl: "19 Mei 2025",
-    items: [
-      { emoji: "🍠", name: "Ubi Jalar Merah", qty: 10, harga: "Rp 8.000" },
-    ],
-  },
-  {
-    inv: "#INV-0282",
-    prod: "Beras Ketan Putih 3kg",
-    total: "Rp 84.000",
-    pay: "lunas",
-    status: "diproses",
-    tgl: "18 Mei 2025",
-    items: [
-      { emoji: "🌾", name: "Beras Ketan Putih", qty: 3, harga: "Rp 28.000" },
-    ],
-  },
-  {
-    inv: "#INV-0281",
-    prod: "Singkong Segar 20kg",
-    total: "Rp 100.000",
-    pay: "belum bayar",
-    status: "pending",
-    tgl: "18 Mei 2025",
-    items: [
-      { emoji: "🟤", name: "Singkong Segar", qty: 20, harga: "Rp 5.000" },
-    ],
-  },
-  {
-    inv: "#INV-0280",
-    prod: "Beras IR 64 5kg x4",
-    total: "Rp 220.000",
-    pay: "lunas",
-    status: "selesai",
-    tgl: "15 Mei 2025",
-    items: [{ emoji: "🍚", name: "Beras IR 64", qty: 4, harga: "Rp 55.000" }],
-  },
-  {
-    inv: "#INV-0275",
-    prod: "Beras Ketan Hitam 2kg",
-    total: "Rp 64.000",
-    pay: "lunas",
-    status: "selesai",
-    tgl: "10 Mei 2025",
-    items: [
-      { emoji: "🍚", name: "Beras Ketan Hitam", qty: 2, harga: "Rp 32.000" },
-    ],
-  },
-  {
-    inv: "#INV-0260",
-    prod: "Ubi Jalar Ungu 5kg",
-    total: "Rp 45.000",
-    pay: "lunas",
-    status: "dibatalkan",
-    tgl: "2 Mei 2025",
-    items: [{ emoji: "🍠", name: "Ubi Jalar Ungu", qty: 5, harga: "Rp 9.000" }],
-  },
-];
+import api from "../../utils/api";
 
 const sbadge = {
   selesai: "badge-green",
@@ -96,30 +21,56 @@ const statuses = [
 ];
 
 function ClientHistory() {
+  const [orders, setOrders] = useState([]);
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderDetail, setOrderDetail] = useState(null);
   const revealRefs = useRef([]);
 
-  const showDetail = (o) => {
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      const profileRes = await api.get("/auth/me");
+      const userId = profileRes.data.id;
+      const res = await api.get(`/orders/${userId}`);
+      const ordersData = Array.isArray(res.data) ? res.data : (res.data.data || []);
+      setOrders(ordersData);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const showDetail = async (o) => {
     setSelectedOrder(o);
     setShowModal(true);
+    try {
+      const res = await api.get(`/orders/detail/${o.id}`);
+      const detailData = res.data.data ? res.data.data : res.data;
+      setOrderDetail(detailData);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const reorder = () => {
-    alert("Produk ditambahkan ke keranjang!");
+    alert("Fitur pesan ulang akan datang!");
     setShowModal(false);
-    window.location.href = "/client/cart";
+    // You could map over orderDetail.items and update cart in localStorage here
   };
 
   const filtered = orders.filter((o) => {
     const matchesStatus = filterStatus === "Semua" || o.status === filterStatus;
-    const matchesSearch =
-      o.inv.toLowerCase().includes(search.toLowerCase()) ||
-      o.prod.toLowerCase().includes(search.toLowerCase());
+    const invStr = `#INV-${o.id}`;
+    const matchesSearch = invStr.toLowerCase().includes(search.toLowerCase());
     return matchesStatus && matchesSearch;
   });
+
+  const formatRupiah = (n) => "Rp " + Number(n).toLocaleString("id-ID");
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -135,7 +86,7 @@ function ClientHistory() {
     );
     revealRefs.current.forEach((el) => el && obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, [filtered]);
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", overflow: "hidden" }}>
@@ -191,9 +142,7 @@ function ClientHistory() {
               <thead>
                 <tr>
                   <th>Invoice</th>
-                  <th>Produk</th>
                   <th>Total</th>
-                  <th>Bayar</th>
                   <th>Status</th>
                   <th>Tanggal</th>
                   <th>Aksi</th>
@@ -210,31 +159,17 @@ function ClientHistory() {
                           color: "var(--brown)",
                         }}
                       >
-                        {o.inv}
+                        #INV-{o.id}
                       </span>
                     </td>
-                    <td
-                      style={{
-                        maxWidth: "160px",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        fontSize: ".85rem",
-                      }}
-                    >
-                      {o.prod}
-                    </td>
-                    <td style={{ fontWeight: 600 }}>{o.total}</td>
+                    <td style={{ fontWeight: 600 }}>{formatRupiah(o.total_harga || 0)}</td>
                     <td>
-                      <span className={`badge ${pbadge[o.pay]}`}>{o.pay}</span>
-                    </td>
-                    <td>
-                      <span className={`badge ${sbadge[o.status]}`}>
-                        {o.status}
+                      <span className={`badge ${sbadge[o.status] || 'badge-gray'}`}>
+                        {o.status || 'pending'}
                       </span>
                     </td>
                     <td style={{ fontSize: ".78rem", color: "var(--muted)" }}>
-                      {o.tgl}
+                      {new Date(o.createdAt || o.tanggal).toLocaleDateString("id-ID")}
                     </td>
                     <td>
                       <div style={{ display: "flex", gap: ".35rem" }}>
@@ -273,7 +208,6 @@ function ClientHistory() {
             <div className="pagination">
               <button className="pg-btn">←</button>
               <button className="pg-btn active">1</button>
-              <button className="pg-btn">2</button>
               <button className="pg-btn">→</button>
               <span className="pg-info">
                 {filtered.length} pesanan ditemukan
@@ -290,7 +224,7 @@ function ClientHistory() {
         >
           <div className="modal">
             <div className="modal-header">
-              <div className="modal-title">Detail {selectedOrder.inv}</div>
+              <div className="modal-title">Detail #INV-{selectedOrder.id}</div>
               <button
                 className="modal-close"
                 onClick={() => setShowModal(false)}
@@ -317,32 +251,40 @@ function ClientHistory() {
                 >
                   Item Pesanan
                 </div>
-                {selectedOrder.items.map((item, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: ".75rem",
-                      padding: ".5rem 0",
-                    }}
-                  >
-                    <span style={{ fontSize: "2rem" }}>{item.emoji}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: ".88rem" }}>
-                        {item.name}
+                {!orderDetail ? (
+                  <div>Loading details...</div>
+                ) : (
+                  (orderDetail.items || orderDetail.OrderItems || []).map((item, i) => {
+                    const prodName = item.Product?.nama || item.Produk?.nama || `Produk ID ${item.id_produk}`;
+                    const qty = item.jumlah;
+                    const hrg = item.Product?.harga || 0;
+                    return (
+                    <div
+                      key={i}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: ".75rem",
+                        padding: ".5rem 0",
+                      }}
+                    >
+                      <span style={{ fontSize: "2rem" }}>🌾</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: ".88rem" }}>
+                          {prodName}
+                        </div>
+                        <div
+                          style={{ fontSize: ".75rem", color: "var(--muted)" }}
+                        >
+                          {formatRupiah(hrg)} × {qty}
+                        </div>
                       </div>
-                      <div
-                        style={{ fontSize: ".75rem", color: "var(--muted)" }}
-                      >
-                        {item.harga} × {item.qty}
+                      <div style={{ fontWeight: 700, color: "var(--brown)" }}>
+                        {formatRupiah(hrg * qty)}
                       </div>
                     </div>
-                    <div style={{ fontWeight: 700, color: "var(--brown)" }}>
-                      {item.harga}
-                    </div>
-                  </div>
-                ))}
+                  )})
+                )}
               </div>
               <div
                 style={{
@@ -373,28 +315,8 @@ function ClientHistory() {
                       fontFamily: "Playfair Display, serif",
                     }}
                   >
-                    {selectedOrder.total}
+                    {formatRupiah(selectedOrder.total_harga || 0)}
                   </div>
-                </div>
-                <div
-                  style={{
-                    background: "var(--cream)",
-                    borderRadius: "10px",
-                    padding: ".85rem",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: ".72rem",
-                      color: "var(--muted)",
-                      marginBottom: ".25rem",
-                    }}
-                  >
-                    Pembayaran
-                  </div>
-                  <span className={`badge ${pbadge[selectedOrder.pay]}`}>
-                    {selectedOrder.pay}
-                  </span>
                 </div>
                 <div
                   style={{
@@ -412,29 +334,9 @@ function ClientHistory() {
                   >
                     Status
                   </div>
-                  <span className={`badge ${sbadge[selectedOrder.status]}`}>
-                    {selectedOrder.status}
+                  <span className={`badge ${sbadge[selectedOrder.status] || 'badge-gray'}`}>
+                    {selectedOrder.status || 'pending'}
                   </span>
-                </div>
-                <div
-                  style={{
-                    background: "var(--cream)",
-                    borderRadius: "10px",
-                    padding: ".85rem",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: ".72rem",
-                      color: "var(--muted)",
-                      marginBottom: ".25rem",
-                    }}
-                  >
-                    Tanggal
-                  </div>
-                  <div style={{ fontSize: ".82rem", fontWeight: 600 }}>
-                    {selectedOrder.tgl}
-                  </div>
                 </div>
               </div>
             </div>
@@ -445,11 +347,6 @@ function ClientHistory() {
               >
                 Tutup
               </button>
-              {selectedOrder.status === "selesai" && (
-                <button className="btn btn-primary" onClick={reorder}>
-                  🔄 Pesan Ulang
-                </button>
-              )}
             </div>
           </div>
         </div>

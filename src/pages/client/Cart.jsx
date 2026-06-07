@@ -1,58 +1,20 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import SidebarClient from "../../components/SidebarClient";
-
-const PRICEDB = {
-  1: 13000,
-  2: 28000,
-  3: 8000,
-  4: 22000,
-  5: 5000,
-  6: 32000,
-  7: 11000,
-  8: 9000,
-  9: 9600,
-};
-const NAMEDB = {
-  1: "Beras Pandan Wangi",
-  2: "Beras Ketan Putih",
-  3: "Ubi Jalar Merah",
-  4: "Beras Merah Organik",
-  5: "Singkong Segar",
-  6: "Beras Ketan Hitam",
-  7: "Beras IR 64",
-  8: "Ubi Jalar Ungu",
-  9: "Beras Pera Lokal",
-};
-const EMOJIDB = {
-  1: "🍚",
-  2: "🌾",
-  3: "🍠",
-  4: "🌿",
-  5: "🟤",
-  6: "🍚",
-  7: "🍚",
-  8: "🍠",
-  9: "🍚",
-};
-const BGDB = {
-  1: "#FFF8E8",
-  2: "#F0F8E8",
-  3: "#FFF0E8",
-  4: "#F0F5E8",
-  5: "#F5EDE0",
-  6: "#F0EEF8",
-  7: "#FFF8E8",
-  8: "#F5E8FF",
-  9: "#FFF8E8",
-};
+import api from "../../utils/api";
 
 function ClientCart() {
+  const navigate = useNavigate();
   const [cart, setCart] = useState(() =>
     JSON.parse(localStorage.getItem("panenku_cart") || "[]"),
   );
   const [showQr, setShowQr] = useState(false);
   const [countdown, setCountdown] = useState(900);
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    api.get("/auth/me").then(res => setProfile(res.data)).catch(console.error);
+  }, []);
 
   const saveCart = (newCart) => {
     localStorage.setItem("panenku_cart", JSON.stringify(newCart));
@@ -76,19 +38,19 @@ function ClientCart() {
   };
 
   const clearCart = () => {
-    if (confirm("Kosongkan keranjang?")) {
+    if (window.confirm("Kosongkan keranjang?")) {
       saveCart([]);
     }
   };
 
   const total = cart.reduce(
-    (sum, item) => sum + (PRICEDB[item.id] || 0) * item.qty,
+    (sum, item) => sum + (item.harga || 0) * item.qty,
     0,
   );
   const ongkir = 15000;
   const finalTotal = total + ongkir;
 
-  const formatRupiah = (n) => "Rp " + n.toLocaleString("id-ID");
+  const formatRupiah = (n) => "Rp " + Number(n).toLocaleString("id-ID");
 
   useEffect(() => {
     let timer;
@@ -107,13 +69,30 @@ function ClientCart() {
       alert("Keranjang masih kosong!");
       return;
     }
+    if (!profile) {
+      alert("Memuat data profil, mohon tunggu...");
+      return;
+    }
     setShowQr(true);
   };
 
-  const confirmPayment = () => {
-    alert("Pembayaran berhasil! Pesanan sedang diproses.");
-    saveCart([]);
-    window.location.href = "/client/history";
+  const confirmPayment = async () => {
+    try {
+      const payload = {
+        id_user: profile.id,
+        items: cart.map(item => ({
+          id_produk: item.id,
+          jumlah: item.qty
+        }))
+      };
+
+      await api.post("/orders", payload);
+      alert("Pembayaran berhasil! Pesanan sedang diproses.");
+      saveCart([]);
+      navigate("/client/history");
+    } catch (err) {
+      alert("Gagal membuat pesanan: " + (err.response?.data?.message || err.message));
+    }
   };
 
   const formatCountdown = () => {
@@ -172,17 +151,23 @@ function ClientCart() {
                     </Link>
                   </div>
                 ) : (
-                  cart.map((item) => (
+                  cart.map((item) => {
+                    const imageUrl = item.foto ? `${import.meta.env.VITE_API_URL || 'http://localhost:5500/api'}/products/images/${item.foto}` : null;
+                    return (
                     <div key={item.id} className="cart-item">
                       <div
                         className="cart-thumb"
-                        style={{ background: BGDB[item.id] || "#EEE" }}
+                        style={{ background: "#FFF8E8", overflow: 'hidden' }}
                       >
-                        {EMOJIDB[item.id] || "🌾"}
+                        {imageUrl ? (
+                          <img src={imageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          "🌾"
+                        )}
                       </div>
                       <div style={{ flex: 1 }}>
                         <div className="cart-name">
-                          {NAMEDB[item.id] || item.name}
+                          {item.name}
                         </div>
                         <div className="cart-qty">
                           <button
@@ -210,7 +195,7 @@ function ClientCart() {
                       </div>
                       <div style={{ textAlign: "right" }}>
                         <div className="cart-price">
-                          {formatRupiah((PRICEDB[item.id] || 0) * item.qty)}
+                          {formatRupiah((item.harga || 0) * item.qty)}
                         </div>
                         <button
                           className="btn btn-red btn-sm"
@@ -221,7 +206,7 @@ function ClientCart() {
                         </button>
                       </div>
                     </div>
-                  ))
+                  )})
                 )}
               </div>
               <div className="card reveal">
@@ -240,7 +225,7 @@ function ClientCart() {
                       outline: "none",
                       resize: "none",
                     }}
-                    defaultValue="Jl. Merdeka No.5, RT 03/04, Kel. Sukajadi, Kec. Sukajadi, Bandung 40163"
+                    defaultValue={profile?.alamat || ""}
                   />
                 </div>
                 <div className="form-row">
@@ -335,8 +320,9 @@ function ClientCart() {
                   id="checkout-btn"
                   onClick={showQr ? confirmPayment : checkout}
                   style={{ marginTop: ".5rem" }}
+                  disabled={cart.length === 0}
                 >
-                  {showQr ? "✅ Sudah Bayar" : "💳 Bayar via QRIS"}
+                  {showQr ? "✅ Selesai Bayar & Buat Pesanan" : "💳 Bayar via QRIS"}
                 </button>
                 <Link
                   to="/client/order"

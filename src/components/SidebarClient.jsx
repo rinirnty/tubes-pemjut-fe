@@ -1,18 +1,25 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import api from "../utils/api";
 
 function SidebarClient() {
   const location = useLocation();
   const [cartCount, setCartCount] = useState(0);
+  const [user, setUser] = useState();
 
   const isActive = (path) => location.pathname === path;
 
   useEffect(() => {
     const updateCartCount = () => {
       const cart = JSON.parse(localStorage.getItem("panenku_cart") || "[]");
+
       const count = cart.reduce((total, item) => total + (item.qty || 0), 0);
       setCartCount(count);
     };
+
+    api.get("/auth/me").then((res) => {
+      setUser(res.data.data);
+    });
 
     updateCartCount();
     window.addEventListener("storage", updateCartCount);
@@ -75,12 +82,15 @@ function SidebarClient() {
         <div className="user-profile">
           <div className="user-avatar">👩</div>
           <div>
-            <div className="user-name">Ibu Ratna</div>
-            <div className="user-email">ratna@email.com</div>
+            <div className="user-name">{user?.nama}</div>
+            <div className="user-email">{user?.email}</div>
           </div>
           <button
             className="btn-logout"
-            onClick={() => (window.location.href = "/login")}
+            onClick={() => {
+              localStorage.removeItem("token");
+              window.location.href = "/login";
+            }}
           >
             🚪
           </button>

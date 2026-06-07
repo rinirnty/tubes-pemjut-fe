@@ -1,39 +1,86 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import SidebarClient from "../../components/SidebarClient";
+import api from "../../utils/api";
 
 const notifs = [
-  {
-    label: "Pesanan baru dikonfirmasi",
-    desc: "Notifikasi saat pesanan kamu berhasil dibuat",
-    on: true,
-  },
-  {
-    label: "Status pengiriman berubah",
-    desc: "Update real-time posisi paketmu",
-    on: true,
-  },
+  { label: "Pesanan baru dikonfirmasi", desc: "Notifikasi saat pesanan kamu berhasil dibuat", on: true },
+  { label: "Status pengiriman berubah", desc: "Update real-time posisi paketmu", on: true },
   { label: "Pesanan tiba", desc: "Notif saat kurir sudah di lokasi", on: true },
-  {
-    label: "Promo & penawaran",
-    desc: "Diskon dan promo menarik dari mitra",
-    on: false,
-  },
-  {
-    label: "Pengingat keranjang",
-    desc: "Ingatkan kamu jika ada item di keranjang",
-    on: false,
-  },
+  { label: "Promo & penawaran", desc: "Diskon dan promo menarik dari mitra", on: false },
+  { label: "Pengingat keranjang", desc: "Ingatkan kamu jika ada item di keranjang", on: false },
 ];
 
 function ClientProfile() {
   const [activeTab, setActiveTab] = useState("info");
   const [isEditing, setIsEditing] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [editForm, setEditForm] = useState({ nama: "", telpon: "", alamat: "" });
+  const [pwForm, setPwForm] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
   const revealRefs = useRef([]);
+  const navigate = useNavigate();
 
-  const saveProfile = () => {
-    alert("Profil berhasil disimpan!");
-    setIsEditing(false);
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const res = await api.get("/auth/me");
+      setProfile(res.data);
+      setEditForm({
+        nama: res.data.nama || "",
+        telpon: res.data.telpon || "",
+        alamat: res.data.alamat || ""
+      });
+    } catch (err) {
+      console.error(err);
+      if (err.response?.status === 401) {
+        navigate("/login");
+      }
+    }
+  };
+
+  const handleEditChange = (e) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+  };
+
+  const handlePwChange = (e) => {
+    setPwForm({ ...pwForm, [e.target.name]: e.target.value });
+  };
+
+  const saveProfile = async () => {
+    try {
+      await api.patch("/auth/profile", editForm);
+      alert("Profil berhasil disimpan!");
+      fetchProfile();
+      setIsEditing(false);
+    } catch (err) {
+      alert("Gagal menyimpan profil: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const savePassword = async () => {
+    if (pwForm.newPassword !== pwForm.confirmPassword) {
+      return alert("Konfirmasi password baru tidak cocok!");
+    }
+    try {
+      await api.patch("/auth/change-password", {
+        oldPassword: pwForm.oldPassword,
+        newPassword: pwForm.newPassword
+      });
+      alert("Password berhasil diubah!");
+      setPwForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    } catch (err) {
+      alert("Gagal mengubah password: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const logout = () => {
+    if (window.confirm("Keluar dari semua sesi?")) {
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
   };
 
   useEffect(() => {
@@ -50,7 +97,9 @@ function ClientProfile() {
     );
     revealRefs.current.forEach((el) => el && obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, [profile]); // re-run when profile loads to re-observe elements
+
+  if (!profile) return <div style={{ padding: '2rem' }}>Loading...</div>;
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", overflow: "hidden" }}>
@@ -77,9 +126,9 @@ function ClientProfile() {
           >
             <div className="profile-avatar-big">👩</div>
             <div>
-              <div className="profile-name">Ibu Ratna Wulandari</div>
-              <div className="profile-email">ratna@email.com</div>
-              <div className="profile-role">🛒 Pembeli</div>
+              <div className="profile-name">{profile.nama}</div>
+              <div className="profile-email">{profile.email}</div>
+              <div className="profile-role">🛒 {profile.role}</div>
             </div>
           </div>
 
@@ -140,53 +189,35 @@ function ClientProfile() {
                 {!isEditing ? (
                   <div id="info-view">
                     <div className="info-row">
-                      <span className="info-label">Nama Depan</span>
-                      <span className="info-value">Ratna</span>
-                    </div>
-                    <div className="info-row">
-                      <span className="info-label">Nama Belakang</span>
-                      <span className="info-value">Wulandari</span>
+                      <span className="info-label">Nama Lengkap</span>
+                      <span className="info-value">{profile.nama}</span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Email</span>
-                      <span className="info-value">ratna@email.com</span>
+                      <span className="info-value">{profile.email}</span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">No. HP</span>
-                      <span className="info-value">081234567890</span>
+                      <span className="info-value">{profile.telpon}</span>
                     </div>
                     <div className="info-row">
-                      <span className="info-label">Bergabung</span>
-                      <span className="info-value">10 Januari 2025</span>
-                    </div>
-                    <div className="info-row">
-                      <span className="info-label">Total Pesanan</span>
-                      <span
-                        className="info-value"
-                        style={{ color: "var(--green)", fontWeight: 700 }}
-                      >
-                        24 pesanan
-                      </span>
+                      <span className="info-label">Alamat Utama</span>
+                      <span className="info-value">{profile.alamat || '-'}</span>
                     </div>
                   </div>
                 ) : (
                   <div id="info-edit">
-                    <div className="form-row" style={{ marginBottom: "1rem" }}>
-                      <div className="form-field">
-                        <label>Nama Depan</label>
-                        <input type="text" defaultValue="Ratna" />
-                      </div>
-                      <div className="form-field">
-                        <label>Nama Belakang</label>
-                        <input type="text" defaultValue="Wulandari" />
-                      </div>
+                    <div className="form-field" style={{ marginBottom: "1rem" }}>
+                      <label>Nama Lengkap</label>
+                      <input type="text" name="nama" value={editForm.nama} onChange={handleEditChange} />
                     </div>
-                    <div
-                      className="form-field"
-                      style={{ marginBottom: "1rem" }}
-                    >
+                    <div className="form-field" style={{ marginBottom: "1rem" }}>
                       <label>No. HP</label>
-                      <input type="text" defaultValue="081234567890" />
+                      <input type="text" name="telpon" value={editForm.telpon} onChange={handleEditChange} />
+                    </div>
+                    <div className="form-field" style={{ marginBottom: "1rem" }}>
+                      <label>Alamat</label>
+                      <input type="text" name="alamat" value={editForm.alamat} onChange={handleEditChange} />
                     </div>
                     <div style={{ display: "flex", gap: ".75rem" }}>
                       <button className="btn btn-primary" onClick={saveProfile}>
@@ -194,7 +225,10 @@ function ClientProfile() {
                       </button>
                       <button
                         className="btn btn-outline"
-                        onClick={() => setIsEditing(false)}
+                        onClick={() => {
+                          setIsEditing(false);
+                          setEditForm({ nama: profile.nama, telpon: profile.telpon, alamat: profile.alamat });
+                        }}
                       >
                         Batal
                       </button>
@@ -238,8 +272,7 @@ function ClientProfile() {
                         marginTop: ".25rem",
                       }}
                     >
-                      Jl. Merdeka No.5, RT 03/04, Kel. Sukajadi, Kec. Sukajadi,
-                      Bandung 40163
+                      {profile.alamat || "Alamat belum diatur"}
                     </div>
                     <div
                       style={{
@@ -248,39 +281,7 @@ function ClientProfile() {
                         marginTop: ".2rem",
                       }}
                     >
-                      📱 081234567890
-                    </div>
-                  </div>
-                  <div
-                    style={{ display: "flex", gap: ".35rem", flexShrink: 0 }}
-                  >
-                    <button className="btn btn-outline btn-sm">✏️</button>
-                    <button className="btn btn-red btn-sm">🗑</button>
-                  </div>
-                </div>
-                <div className="addr-card">
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: ".9rem" }}>
-                      Kantor
-                    </div>
-                    <div
-                      style={{
-                        fontSize: ".82rem",
-                        color: "var(--muted)",
-                        marginTop: ".25rem",
-                      }}
-                    >
-                      Jl. Asia Afrika No.10, Kel. Braga, Kec. Sumur Bandung,
-                      Bandung 40111
-                    </div>
-                    <div
-                      style={{
-                        fontSize: ".78rem",
-                        color: "var(--muted)",
-                        marginTop: ".2rem",
-                      }}
-                    >
-                      📱 081234567890
+                      📱 {profile.telpon}
                     </div>
                   </div>
                   <div
@@ -303,19 +304,19 @@ function ClientProfile() {
                 <div className="section-title">Ubah Password</div>
                 <div className="form-field" style={{ marginBottom: "1rem" }}>
                   <label>Password Lama</label>
-                  <input type="password" placeholder="Masukkan password lama" />
+                  <input type="password" name="oldPassword" value={pwForm.oldPassword} onChange={handlePwChange} placeholder="Masukkan password lama" />
                 </div>
                 <div className="form-field" style={{ marginBottom: "1rem" }}>
                   <label>Password Baru</label>
-                  <input type="password" placeholder="Minimal 8 karakter" />
+                  <input type="password" name="newPassword" value={pwForm.newPassword} onChange={handlePwChange} placeholder="Minimal 8 karakter" />
                 </div>
                 <div className="form-field" style={{ marginBottom: "1.25rem" }}>
                   <label>Konfirmasi Password Baru</label>
-                  <input type="password" placeholder="Ulangi password baru" />
+                  <input type="password" name="confirmPassword" value={pwForm.confirmPassword} onChange={handlePwChange} placeholder="Ulangi password baru" />
                 </div>
                 <button
                   className="btn btn-primary"
-                  onClick={() => alert("Password berhasil diubah!")}
+                  onClick={savePassword}
                 >
                   🔒 Simpan Password
                 </button>
@@ -333,10 +334,10 @@ function ClientProfile() {
                 >
                   <div>
                     <div style={{ fontWeight: 600, fontSize: ".88rem" }}>
-                      💻 Chrome — Windows
+                      💻 Sesi Saat Ini
                     </div>
                     <div style={{ fontSize: ".75rem", color: "var(--muted)" }}>
-                      Bandung, Indonesia — Aktif sekarang
+                      Aktif sekarang
                     </div>
                   </div>
                   <span className="badge badge-green">Aktif</span>
@@ -344,10 +345,7 @@ function ClientProfile() {
                 <div className="divider"></div>
                 <button
                   className="btn btn-red"
-                  onClick={() =>
-                    confirm("Keluar dari semua sesi?") &&
-                    (window.location.href = "/login")
-                  }
+                  onClick={logout}
                 >
                   🚪 Keluar dari Semua Sesi
                 </button>

@@ -1,116 +1,36 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import SidebarClient from "../../components/SidebarClient";
-
-const products = [
-  {
-    emoji: "🍚",
-    badge: "Terlaris",
-    cat: "Beras Putih",
-    name: "Beras Pandan Wangi",
-    price: "Rp 65.000",
-    unit: "/5 kg",
-    bg: "#FFF8E8",
-    id: 1,
-  },
-  {
-    emoji: "🌾",
-    badge: "Baru",
-    cat: "Beras Ketan",
-    name: "Beras Ketan Putih",
-    price: "Rp 28.000",
-    unit: "/kg",
-    bg: "#F0F8E8",
-    id: 2,
-  },
-  {
-    emoji: "🍠",
-    badge: "",
-    cat: "Ubi Jalar",
-    name: "Ubi Jalar Merah",
-    price: "Rp 8.000",
-    unit: "/kg",
-    bg: "#FFF0E8",
-    id: 3,
-  },
-  {
-    emoji: "🌿",
-    badge: "",
-    cat: "Beras Merah",
-    name: "Beras Merah Organik",
-    price: "Rp 22.000",
-    unit: "/kg",
-    bg: "#F0F5E8",
-    id: 4,
-  },
-  {
-    emoji: "🟤",
-    badge: "Promo",
-    cat: "Ubi Kayu",
-    name: "Singkong Segar",
-    price: "Rp 5.000",
-    unit: "/kg",
-    bg: "#F5EDE0",
-    id: 5,
-  },
-  {
-    emoji: "🍚",
-    badge: "",
-    cat: "Beras Ketan",
-    name: "Beras Ketan Hitam",
-    price: "Rp 32.000",
-    unit: "/kg",
-    bg: "#F0EEF8",
-    id: 6,
-  },
-  {
-    emoji: "🍚",
-    badge: "",
-    cat: "Beras Putih",
-    name: "Beras IR 64",
-    price: "Rp 55.000",
-    unit: "/5 kg",
-    bg: "#FFF8E8",
-    id: 7,
-  },
-  {
-    emoji: "🍠",
-    badge: "",
-    cat: "Ubi Jalar",
-    name: "Ubi Jalar Ungu",
-    price: "Rp 9.000",
-    unit: "/kg",
-    bg: "#F5E8FF",
-    id: 8,
-  },
-  {
-    emoji: "🌾",
-    badge: "",
-    cat: "Beras Putih",
-    name: "Beras Pera Lokal",
-    price: "Rp 48.000",
-    unit: "/5 kg",
-    bg: "#FFF8E8",
-    id: 9,
-  },
-];
-
-const categories = [
-  "Semua",
-  "Beras Putih",
-  "Beras Ketan",
-  "Ubi Jalar",
-  "Ubi Kayu",
-  "Beras Merah",
-];
+import api from "../../utils/api";
 
 function ClientOrder() {
   const [cart, setCart] = useState(() =>
     JSON.parse(localStorage.getItem("panenku_cart") || "[]"),
   );
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [currentKat, setCurrentKat] = useState("Semua");
   const [search, setSearch] = useState("");
   const revealRefs = useRef([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [prodRes, catRes] = await Promise.all([
+        api.get("/products"),
+        api.get("/categories")
+      ]);
+      const prodData = Array.isArray(prodRes.data) ? prodRes.data : (prodRes.data.data || []);
+      const catData = Array.isArray(catRes.data) ? catRes.data : (catRes.data.data || []);
+      setProducts(prodData);
+      setCategories([{ id: 'all', nama: 'Semua' }, ...catData]);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+    }
+  };
 
   const saveCart = (newCart) => {
     localStorage.setItem("panenku_cart", JSON.stringify(newCart));
@@ -123,11 +43,11 @@ function ClientOrder() {
     return item ? item.qty : 0;
   };
 
-  const updateCart = (id, name, delta) => {
+  const updateCart = (product, delta) => {
     let newCart = [...cart];
-    const index = newCart.findIndex((i) => i.id === id);
+    const index = newCart.findIndex((i) => i.id === product.id);
     if (index === -1 && delta > 0) {
-      newCart.push({ id, name, qty: delta });
+      newCart.push({ id: product.id, name: product.nama, harga: product.harga, foto: product.foto, qty: delta });
     } else if (index !== -1) {
       newCart[index].qty += delta;
       if (newCart[index].qty <= 0) {
@@ -138,10 +58,12 @@ function ClientOrder() {
   };
 
   const filtered = products.filter((p) => {
-    const matchesKat = currentKat === "Semua" || p.cat === currentKat;
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    const matchesKat = currentKat === "Semua" || p.Kategori?.nama === currentKat;
+    const matchesSearch = p.nama.toLowerCase().includes(search.toLowerCase());
     return matchesKat && matchesSearch;
   });
+
+  const formatRupiah = (n) => "Rp " + Number(n).toLocaleString("id-ID");
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -157,7 +79,7 @@ function ClientOrder() {
     );
     revealRefs.current.forEach((el) => el && obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, [filtered]);
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", overflow: "hidden" }}>
@@ -194,10 +116,10 @@ function ClientOrder() {
               {categories.map((cat, i) => (
                 <button
                   key={i}
-                  className={`filter-btn ${currentKat === cat ? "active" : ""}`}
-                  onClick={() => setCurrentKat(cat)}
+                  className={`filter-btn ${currentKat === cat.nama ? "active" : ""}`}
+                  onClick={() => setCurrentKat(cat.nama)}
                 >
-                  {cat}
+                  {cat.nama}
                 </button>
               ))}
             </div>
@@ -217,28 +139,29 @@ function ClientOrder() {
           >
             {filtered.map((p) => {
               const qty = getQty(p.id);
+              const imageUrl = p.foto ? `${import.meta.env.VITE_API_URL || 'http://localhost:5500/api'}/products/images/${p.foto}` : null;
+              
               return (
                 <div key={p.id} className="prod-card">
-                  <div className="prod-thumb" style={{ background: p.bg }}>
-                    {p.emoji}
-                    {p.badge && (
-                      <span className="prod-badge-abs badge-gold">
-                        {p.badge}
-                      </span>
+                  <div className="prod-thumb" style={{ background: '#FFF8E8', overflow: 'hidden' }}>
+                    {imageUrl ? (
+                      <img src={imageUrl} alt={p.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      "🌾"
                     )}
                   </div>
                   <div className="prod-body">
-                    <div className="prod-cat">{p.cat}</div>
-                    <div className="prod-name">{p.name}</div>
+                    <div className="prod-cat">{p.Kategori?.nama}</div>
+                    <div className="prod-name">{p.nama}</div>
                     <div className="prod-footer">
                       <div>
-                        <div className="prod-price">{p.price}</div>
-                        <div className="prod-unit">{p.unit}</div>
+                        <div className="prod-price">{formatRupiah(p.harga)}</div>
+                        <div className="prod-unit">Stok: {p.stok}</div>
                       </div>
                       {qty === 0 ? (
                         <button
                           className="btn btn-primary btn-sm"
-                          onClick={() => updateCart(p.id, p.name, 1)}
+                          onClick={() => updateCart(p, 1)}
                         >
                           + Tambah
                         </button>
@@ -246,14 +169,14 @@ function ClientOrder() {
                         <div className="qty-ctrl">
                           <button
                             className="qty-btn"
-                            onClick={() => updateCart(p.id, p.name, -1)}
+                            onClick={() => updateCart(p, -1)}
                           >
                             −
                           </button>
                           <span className="qty-val">{qty}</span>
                           <button
                             className="qty-btn"
-                            onClick={() => updateCart(p.id, p.name, 1)}
+                            onClick={() => updateCart(p, 1)}
                           >
                             +
                           </button>

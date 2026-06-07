@@ -1,92 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import SidebarAdmin from "../../components/SidebarAdmin";
+import api from "../../utils/api";
 
-const initialUsers = [
-  {
-    id: 1,
-    name: "Ibu Ratna Wulandari",
-    email: "ratna@email.com",
-    phone: "081234567890",
-    role: "pembeli",
-    joined: "10 Jan 2025",
-    orders: 24,
-    status: "aktif",
-    avatar: "👩",
-  },
-  {
-    id: 2,
-    name: "Pak Darto",
-    email: "darto@email.com",
-    phone: "082345678901",
-    role: "mitra",
-    toko: "UD Darto Pangan",
-    joined: "15 Feb 2025",
-    orders: 0,
-    status: "aktif",
-    komisi: "Rp 3.8jt",
-    avatar: "👨",
-  },
-  {
-    id: 3,
-    name: "Bu Siti Aminah",
-    email: "siti@email.com",
-    phone: "083456789012",
-    role: "pembeli",
-    joined: "20 Feb 2025",
-    orders: 8,
-    status: "aktif",
-    avatar: "👩‍💼",
-  },
-  {
-    id: 4,
-    name: "Pak Hendra Wijaya",
-    email: "hendra@email.com",
-    phone: "084567890123",
-    role: "mitra",
-    toko: "UD Hendra Pangan",
-    joined: "1 Mar 2025",
-    orders: 0,
-    status: "aktif",
-    komisi: "Rp 4.1jt",
-    avatar: "👨",
-  },
-  {
-    id: 5,
-    name: "Pak Budi Santoso",
-    email: "budi@email.com",
-    phone: "086789012345",
-    role: "pembeli",
-    joined: "2 Apr 2025",
-    orders: 3,
-    status: "aktif",
-    avatar: "👨",
-  },
-  {
-    id: 6,
-    name: "Akun Spam",
-    email: "spam@email.com",
-    phone: "-",
-    role: "pembeli",
-    joined: "10 Mei 2025",
-    orders: 0,
-    status: "blokir",
-    avatar: "🚫",
-  },
-  {
-    id: 7,
-    name: "Mitra Baru",
-    email: "mitrabaruu@email.com",
-    phone: "087654321098",
-    role: "mitra",
-    toko: "Toko Baru",
-    joined: "18 Mei 2025",
-    orders: 0,
-    status: "pending",
-    avatar: "🤝",
-  },
-];
-
-const roleBadgeMap = { pembeli: "badge-blue", mitra: "badge-brown" };
+const roleBadgeMap = { pembeli: "badge-blue", admin: "badge-brown", mitra: "badge-brown" };
 const statusBadgeMap = {
   aktif: "badge-green",
   pending: "badge-gold",
@@ -94,22 +10,34 @@ const statusBadgeMap = {
 };
 
 function AdminClients() {
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState([]);
   const [currentTab, setCurrentTab] = useState("semua");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selected, setSelected] = useState(null);
   const revealRefs = useRef([]);
 
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await api.get("/users");
+      const usersData = Array.isArray(res.data) ? res.data : (res.data.data || []);
+      setUsers(usersData);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const filtered = users.filter((u) => {
     let tabOk = false;
     if (currentTab === "semua") tabOk = true;
-    else if (currentTab === "pending") tabOk = u.status === "pending";
-    else if (currentTab === "blokir") tabOk = u.status === "blokir";
     else tabOk = u.role === currentTab;
     const qOk =
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase());
+      u.nama?.toLowerCase().includes(search.toLowerCase()) ||
+      u.email?.toLowerCase().includes(search.toLowerCase());
     return tabOk && qOk;
   });
 
@@ -118,20 +46,23 @@ function AdminClients() {
     setShowModal(true);
   };
 
-  const updateStatus = (user, newStatus) => {
-    setUsers(
-      users.map((u) => (u.id === user.id ? { ...u, status: newStatus } : u)),
-    );
-    if (selected) setSelected({ ...selected, status: newStatus });
-    setShowModal(false);
+  const deleteUser = async (user) => {
+    if (window.confirm(`Yakin ingin menghapus ${user.nama}?`)) {
+      try {
+        await api.delete(`/users/${user.id}`);
+        alert("Pengguna berhasil dihapus");
+        fetchUsers();
+        setShowModal(false);
+      } catch (err) {
+        alert("Gagal menghapus pengguna");
+      }
+    }
   };
 
   const tabTitles = {
     semua: "Semua Pengguna",
     pembeli: "Pembeli",
-    mitra: "Mitra",
-    pending: "Pending Verifikasi",
-    blokir: "Diblokir",
+    admin: "Admin",
   };
 
   useEffect(() => {
@@ -148,7 +79,7 @@ function AdminClients() {
     );
     revealRefs.current.forEach((el) => el && obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, [filtered]);
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", overflow: "hidden" }}>
@@ -177,46 +108,30 @@ function AdminClients() {
                 👥
               </div>
               <div>
-                <div className="stat-value">1.240</div>
+                <div className="stat-value">{users.length}</div>
                 <div className="stat-label">Total Pengguna</div>
-                <div className="stat-change up">▲ 24 baru minggu ini</div>
               </div>
             </div>
             <div className="stat-card">
               <div className="stat-icon" style={{ background: "#EAF3DE" }}>
-                🤝
+                🛒
               </div>
               <div>
                 <div className="stat-value">
-                  {
-                    users.filter(
-                      (u) => u.role === "mitra" && u.status === "aktif",
-                    ).length
-                  }
+                  {users.filter((u) => u.role === "pembeli").length}
                 </div>
-                <div className="stat-label">Mitra Aktif</div>
+                <div className="stat-label">Pembeli</div>
               </div>
             </div>
             <div className="stat-card">
               <div className="stat-icon" style={{ background: "#FFF8E0" }}>
-                ⏳
+                ⚙️
               </div>
               <div>
                 <div className="stat-value">
-                  {users.filter((u) => u.status === "pending").length}
+                  {users.filter((u) => u.role === "admin").length}
                 </div>
-                <div className="stat-label">Mitra Pending</div>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon" style={{ background: "#FDECEA" }}>
-                🚫
-              </div>
-              <div>
-                <div className="stat-value">
-                  {users.filter((u) => u.status === "blokir").length}
-                </div>
-                <div className="stat-label">Akun Diblokir</div>
+                <div className="stat-label">Admin</div>
               </div>
             </div>
           </div>
@@ -234,9 +149,7 @@ function AdminClients() {
             {[
               { id: "semua", label: "Semua Pengguna" },
               { id: "pembeli", label: "🛒 Pembeli" },
-              { id: "mitra", label: "🌾 Mitra" },
-              { id: "pending", label: "⏳ Pending Verifikasi" },
-              { id: "blokir", label: "🚫 Diblokir" },
+              { id: "admin", label: "⚙️ Admin" },
             ].map((t) => (
               <button
                 key={t.id}
@@ -272,8 +185,6 @@ function AdminClients() {
                   <th>Role</th>
                   <th>No HP</th>
                   <th>Bergabung</th>
-                  <th>Pesanan</th>
-                  <th>Status</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -281,7 +192,7 @@ function AdminClients() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="5"
                       style={{
                         textAlign: "center",
                         padding: "2rem",
@@ -306,13 +217,13 @@ function AdminClients() {
                             className="avatar"
                             style={{ background: "var(--cream2)" }}
                           >
-                            {u.avatar}
+                            👤
                           </div>
                           <div>
                             <div
                               style={{ fontWeight: 600, fontSize: ".88rem" }}
                             >
-                              {u.name}
+                              {u.nama}
                             </div>
                             <div
                               style={{
@@ -326,20 +237,13 @@ function AdminClients() {
                         </div>
                       </td>
                       <td>
-                        <span className={`badge ${roleBadgeMap[u.role]}`}>
+                        <span className={`badge ${roleBadgeMap[u.role] || 'badge-blue'}`}>
                           {u.role}
-                          {u.toko ? ": " + u.toko : ""}
                         </span>
                       </td>
-                      <td style={{ fontSize: ".82rem" }}>{u.phone}</td>
+                      <td style={{ fontSize: ".82rem" }}>{u.telpon || '-'}</td>
                       <td style={{ fontSize: ".78rem", color: "var(--muted)" }}>
-                        {u.joined}
-                      </td>
-                      <td style={{ fontSize: ".82rem" }}>{u.orders}</td>
-                      <td>
-                        <span className={`badge ${statusBadgeMap[u.status]}`}>
-                          {u.status}
-                        </span>
+                        {new Date(u.createdAt).toLocaleDateString('id-ID')}
                       </td>
                       <td>
                         <div style={{ display: "flex", gap: ".35rem" }}>
@@ -349,38 +253,12 @@ function AdminClients() {
                           >
                             Detail
                           </button>
-                          {u.status === "pending" && (
-                            <>
-                              <button
-                                className="btn btn-green btn-sm"
-                                onClick={() => updateStatus(u, "aktif")}
-                              >
-                                ✓
-                              </button>
-                              <button
-                                className="btn btn-red btn-sm"
-                                onClick={() => updateStatus(u, "blokir")}
-                              >
-                                ✕
-                              </button>
-                            </>
-                          )}
-                          {u.status === "aktif" && (
-                            <button
-                              className="btn btn-red btn-sm"
-                              onClick={() => updateStatus(u, "blokir")}
-                            >
-                              🚫
-                            </button>
-                          )}
-                          {u.status === "blokir" && (
-                            <button
-                              className="btn btn-outline btn-sm"
-                              onClick={() => updateStatus(u, "aktif")}
-                            >
-                              ✓ Aktifkan
-                            </button>
-                          )}
+                          <button
+                            className="btn btn-red btn-sm"
+                            onClick={() => deleteUser(u)}
+                          >
+                            🗑
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -391,7 +269,6 @@ function AdminClients() {
             <div className="pagination">
               <button className="pg-btn">←</button>
               <button className="pg-btn active">1</button>
-              <button className="pg-btn">2</button>
               <button className="pg-btn">→</button>
               <span className="pg-info">
                 Menampilkan {filtered.length} pengguna
@@ -410,7 +287,7 @@ function AdminClients() {
         >
           <div className="modal" style={{ maxWidth: "520px" }}>
             <div className="modal-header">
-              <div className="modal-title">{selected.name}</div>
+              <div className="modal-title">{selected.nama}</div>
               <button
                 className="modal-close"
                 onClick={() => setShowModal(false)}
@@ -442,24 +319,18 @@ function AdminClients() {
                     fontSize: "2rem",
                   }}
                 >
-                  {selected.avatar}
+                  👤
                 </div>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: "1rem" }}>
-                    {selected.name}
+                    {selected.nama}
                   </div>
                   <div style={{ fontSize: ".82rem", color: "var(--muted)" }}>
                     {selected.email}
                   </div>
                   <div style={{ marginTop: ".3rem" }}>
-                    <span className={`badge ${roleBadgeMap[selected.role]}`}>
+                    <span className={`badge ${roleBadgeMap[selected.role] || 'badge-blue'}`}>
                       {selected.role}
-                    </span>
-                    <span
-                      className={`badge ${statusBadgeMap[selected.status]}`}
-                      style={{ marginLeft: ".3rem" }}
-                    >
-                      {selected.status}
                     </span>
                   </div>
                 </div>
@@ -488,7 +359,7 @@ function AdminClients() {
                     No HP
                   </div>
                   <div style={{ fontWeight: 600, fontSize: ".88rem" }}>
-                    {selected.phone}
+                    {selected.telpon || '-'}
                   </div>
                 </div>
                 <div
@@ -508,9 +379,18 @@ function AdminClients() {
                     Bergabung
                   </div>
                   <div style={{ fontWeight: 600, fontSize: ".88rem" }}>
-                    {selected.joined}
+                    {new Date(selected.createdAt).toLocaleDateString('id-ID')}
                   </div>
                 </div>
+              </div>
+              <div style={{
+                padding: ".85rem",
+                background: "var(--cream)",
+                borderRadius: "10px",
+                marginTop: ".85rem"
+              }}>
+                <div style={{ fontSize: ".72rem", color: "var(--muted)", marginBottom: ".25rem" }}>Alamat</div>
+                <div style={{ fontWeight: 600, fontSize: ".88rem" }}>{selected.alamat || '-'}</div>
               </div>
             </div>
             <div className="modal-footer">
@@ -520,38 +400,12 @@ function AdminClients() {
               >
                 Tutup
               </button>
-              {selected.status === "pending" && (
-                <>
-                  <button
-                    className="btn btn-red"
-                    onClick={() => updateStatus(selected, "blokir")}
-                  >
-                    ✕ Tolak
-                  </button>
-                  <button
-                    className="btn btn-green"
-                    onClick={() => updateStatus(selected, "aktif")}
-                  >
-                    ✓ Verifikasi
-                  </button>
-                </>
-              )}
-              {selected.status === "aktif" && (
-                <button
-                  className="btn btn-red"
-                  onClick={() => updateStatus(selected, "blokir")}
-                >
-                  🚫 Blokir
-                </button>
-              )}
-              {selected.status === "blokir" && (
-                <button
-                  className="btn btn-primary"
-                  onClick={() => updateStatus(selected, "aktif")}
-                >
-                  ✓ Aktifkan
-                </button>
-              )}
+              <button
+                className="btn btn-red"
+                onClick={() => deleteUser(selected)}
+              >
+                🗑 Hapus Akun
+              </button>
             </div>
           </div>
         </div>

@@ -1,190 +1,116 @@
 import { useEffect, useRef, useState } from "react";
 import SidebarAdmin from "../../components/SidebarAdmin";
-
-const initialProducts = [
-  {
-    id: 1,
-    emoji: "🍚",
-    cat: "Beras Putih",
-    name: "Beras Pandan Wangi",
-    price: "Rp 65.000",
-    unit: "/5 kg",
-    stock: 120,
-    mitra: "Mitra Pak Hendra",
-    status: "aktif",
-    bg: "#FFF8E8",
-  },
-  {
-    id: 2,
-    emoji: "🌾",
-    cat: "Beras Ketan",
-    name: "Beras Ketan Putih",
-    price: "Rp 28.000",
-    unit: "/kg",
-    stock: 15,
-    mitra: "Mitra Bu Siti",
-    status: "stok menipis",
-    bg: "#EAF6EA",
-  },
-  {
-    id: 3,
-    emoji: "🍠",
-    cat: "Ubi Jalar",
-    name: "Ubi Jalar Merah",
-    price: "Rp 8.000",
-    unit: "/kg",
-    stock: 50,
-    mitra: "Mitra Pak Darto",
-    status: "aktif",
-    bg: "#FFF0E0",
-  },
-  {
-    id: 4,
-    emoji: "🌿",
-    cat: "Beras Merah",
-    name: "Beras Merah Organik",
-    price: "Rp 22.000",
-    unit: "/kg",
-    stock: 0,
-    mitra: "Mitra Pak Budi",
-    status: "nonaktif",
-    bg: "#F0F5E8",
-  },
-  {
-    id: 5,
-    emoji: "🟤",
-    cat: "Ubi Kayu",
-    name: "Singkong Segar",
-    price: "Rp 5.000",
-    unit: "/kg",
-    stock: 80,
-    mitra: "Mitra Ibu Ratna",
-    status: "aktif",
-    bg: "#F5EDE0",
-  },
-  {
-    id: 6,
-    emoji: "🍚",
-    cat: "Beras Ketan",
-    name: "Beras Ketan Hitam",
-    price: "Rp 32.000",
-    unit: "/kg",
-    stock: 30,
-    mitra: "Mitra Pak Hendra",
-    status: "aktif",
-    bg: "#F0EEF8",
-  },
-];
-
-const categories = [
-  "semua",
-  "Beras Putih",
-  "Beras Ketan",
-  "Ubi Jalar",
-  "Ubi Kayu",
-  "Beras Merah",
-];
+import api from "../../utils/api";
 
 function AdminProducts() {
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [currentKat, setCurrentKat] = useState("semua");
   const [view, setView] = useState("grid");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("tambah");
   const [editingId, setEditingId] = useState(null);
+
   const [form, setForm] = useState({
     name: "",
-    kat: "Beras Putih",
-    desc: "",
+    id_kategori: 0,
     price: "",
-    unit: "kg",
     stock: "",
-    mitra: "Mitra Pak Hendra",
-    status: "Aktif",
+    foto: null
   });
   const revealRefs = useRef([]);
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [prodRes, catRes] = await Promise.all([
+        api.get("/products"),
+        api.get("/categories")
+      ]);
+      const prodData = Array.isArray(prodRes.data) ? prodRes.data : (prodRes.data.data || []);
+      const catData = Array.isArray(catRes.data) ? catRes.data : (catRes.data.data || []);
+      setProducts(prodData);
+      setCategories(catData);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const filtered = products.filter((p) => {
-    const matchesKat = currentKat === "semua" || p.cat === currentKat;
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
+    const matchesKat = currentKat === "semua" || p.Kategori?.nama === currentKat;
+    const matchesSearch = p.nama.toLowerCase().includes(search.toLowerCase());
     return matchesKat && matchesSearch;
   });
 
   const openEdit = (p) => {
     setModalType("edit");
-    setEditingId(p.id);
+    setEditingId(p.id_produk);
     setForm({
-      name: p.name,
-      kat: p.cat,
-      desc: "",
-      price: p.price.replace(/\D/g, ""),
-      unit: p.unit.replace("/ ", ""),
-      stock: p.stock,
-      mitra: p.mitra,
-      status: p.status,
+      name: p.nama,
+      id_kategori: p.id_kategori || (categories[0]?.id_kategori || ""),
+      price: p.harga,
+      stock: p.stok,
+      foto: null
     });
     setShowModal(true);
   };
 
-  const saveProduct = () => {
-    if (modalType === "tambah") {
-      const newProduct = {
-        id: Date.now(),
-        emoji: "🌾",
-        cat: form.kat,
-        name: form.name,
-        price: `Rp ${parseInt(form.price).toLocaleString("id-ID")}`,
-        unit: `/${form.unit}`,
-        stock: parseInt(form.stock),
-        mitra: form.mitra,
-        status:
-          form.status === "Aktif"
-            ? parseInt(form.stock) < 20
-              ? "stok menipis"
-              : "aktif"
-            : "nonaktif",
-        bg: "#FFF8E8",
-      };
-      setProducts([...products, newProduct]);
-    } else {
-      setProducts(
-        products.map((p) => {
-          if (p.id === editingId) {
-            return {
-              ...p,
-              name: form.name,
-              cat: form.kat,
-              price: `Rp ${parseInt(form.price).toLocaleString("id-ID")}`,
-              unit: `/${form.unit}`,
-              stock: parseInt(form.stock),
-              status:
-                form.status === "Aktif"
-                  ? parseInt(form.stock) < 20
-                    ? "stok menipis"
-                    : "aktif"
-                  : "nonaktif",
-            };
-          }
-          return p;
-        }),
-      );
-    }
-    setShowModal(false);
-    alert("Produk berhasil disimpan!");
+  const handleFileChange = (e) => {
+    setForm({ ...form, foto: e.target.files[0] });
   };
 
-  const deleteProduct = (id) => {
-    if (confirm("Hapus produk ini?")) {
-      setProducts(products.filter((p) => p.id !== id));
+  const saveProduct = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("nama", form.name);
+      formData.append("id_kategori", form.id_kategori);
+      formData.append("harga", form.price);
+      formData.append("stok", form.stock);
+      if (form.foto) {
+        formData.append("foto", form.foto);
+      }
+
+
+      if (modalType === "tambah") {
+        await api.post("/products", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        alert("Produk berhasil ditambahkan!");
+      } else {
+        await api.patch(`/products/${editingId}`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        alert("Produk berhasil diupdate!");
+      }
+      setShowModal(false);
+      fetchData();
+    } catch (err) {
+      alert("Gagal menyimpan produk: " + (err.response?.data?.message || err.message));
     }
   };
 
-  const getStatusBadgeClass = (status) => {
-    if (status === "aktif") return "badge-green";
-    if (status === "stok menipis") return "badge-gold";
+  const deleteProduct = async (id) => {
+    if (window.confirm("Hapus produk ini?")) {
+      try {
+        await api.delete(`/products/${id}`);
+        fetchData();
+      } catch (err) {
+        alert("Gagal menghapus produk");
+      }
+    }
+  };
+
+  const getStatusBadgeClass = (stock) => {
+    if (stock > 20) return "badge-green";
+    if (stock > 0) return "badge-gold";
     return "badge-red";
   };
+
+  const formatRupiah = (n) => "Rp " + Number(n).toLocaleString("id-ID");
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -200,9 +126,10 @@ function AdminProducts() {
     );
     revealRefs.current.forEach((el) => el && obs.observe(el));
     return () => obs.disconnect();
-  }, []);
+  }, [filtered]);
 
   return (
+
     <div style={{ minHeight: "100vh", display: "flex", overflow: "hidden" }}>
       <SidebarAdmin />
       <div className="main">
@@ -219,13 +146,10 @@ function AdminProducts() {
                 setEditingId(null);
                 setForm({
                   name: "",
-                  kat: "Beras Putih",
-                  desc: "",
+                  id_kategori: categories[0]?.id_kategori || "",
                   price: "",
-                  unit: "kg",
                   stock: "",
-                  mitra: "Mitra Pak Hendra",
-                  status: "Aktif",
+                  foto: null
                 });
                 setShowModal(true);
               }}
@@ -260,10 +184,7 @@ function AdminProducts() {
               <div>
                 <div className="stat-value">
                   {
-                    products.filter(
-                      (p) =>
-                        p.status === "aktif" || p.status === "stok menipis",
-                    ).length
+                    products.filter((p) => p.stok > 0).length
                   }
                 </div>
                 <div className="stat-label">Aktif</div>
@@ -275,7 +196,7 @@ function AdminProducts() {
               </div>
               <div>
                 <div className="stat-value">
-                  {products.filter((p) => p.status === "stok menipis").length}
+                  {products.filter((p) => p.stok > 0 && p.stok <= 20).length}
                 </div>
                 <div className="stat-label">Stok Menipis</div>
               </div>
@@ -285,7 +206,7 @@ function AdminProducts() {
                 📂
               </div>
               <div>
-                <div className="stat-value">5</div>
+                <div className="stat-value">{categories.length}</div>
                 <div className="stat-label">Kategori</div>
               </div>
             </div>
@@ -304,13 +225,19 @@ function AdminProducts() {
             ref={(el) => (revealRefs.current[1] = el)}
           >
             <div className="filter-bar" style={{ margin: 0 }}>
-              {categories.map((kat, i) => (
+              <button
+                className={`filter-btn ${currentKat === "semua" ? "active" : ""}`}
+                onClick={() => setCurrentKat("semua")}
+              >
+                Semua
+              </button>
+              {categories.map((kat) => (
                 <button
-                  key={i}
-                  className={`filter-btn ${currentKat === kat ? "active" : ""}`}
-                  onClick={() => setCurrentKat(kat)}
+                  key={kat.id}
+                  className={`filter-btn ${currentKat === kat.nama ? "active" : ""}`}
+                  onClick={() => setCurrentKat(kat.nama)}
                 >
-                  {kat === "semua" ? "Semua" : kat}
+                  {kat.nama}
                 </button>
               ))}
             </div>
@@ -347,44 +274,51 @@ function AdminProducts() {
               className="prod-grid reveal"
               ref={(el) => (revealRefs.current[2] = el)}
             >
-              {filtered.map((p) => (
-                <div key={p.id} className="prod-card">
-                  <div className="prod-thumb" style={{ background: p.bg }}>
-                    {p.emoji}
-                    <span
-                      className={`prod-stock-badge ${getStatusBadgeClass(p.status)}`}
-                    >
-                      {p.status}
-                    </span>
-                  </div>
-                  <div className="prod-body">
-                    <div className="prod-cat">{p.cat}</div>
-                    <div className="prod-name">{p.name}</div>
-                    <div className="prod-footer">
-                      <div>
-                        <div className="prod-price">{p.price}</div>
-                        <div className="prod-unit">{p.unit}</div>
-                      </div>
-                      <div className="prod-actions">
-                        <button
-                          className="btn btn-outline btn-icon btn-sm"
-                          onClick={() => openEdit(p)}
-                          title="Edit"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          className="btn btn-red btn-icon btn-sm"
-                          onClick={() => deleteProduct(p.id)}
-                          title="Hapus"
-                        >
-                          🗑️
-                        </button>
+              {filtered.map((p) => {
+                const imageUrl = p.foto ? `${import.meta.env.VITE_API_URL || 'http://localhost:5500/api'}/products/images/${p.foto}` : null;
+                return (
+                  <div key={p.id} className="prod-card">
+                    <div className="prod-thumb" style={{ background: '#FFF8E8', overflow: 'hidden' }}>
+                      {imageUrl ? (
+                        <img src={imageUrl} alt={p.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        "🌾"
+                      )}
+                      <span
+                        className={`prod-stock-badge ${getStatusBadgeClass(p.stok)}`}
+                      >
+                        {p.stok > 20 ? "aktif" : p.stok > 0 ? "stok menipis" : "kosong"}
+                      </span>
+                    </div>
+                    <div className="prod-body">
+                      <div className="prod-cat">{p.Kategori?.nama}</div>
+                      <div className="prod-name">{p.nama}</div>
+                      <div className="prod-footer">
+                        <div>
+                          <div className="prod-price">{formatRupiah(p.harga)}</div>
+                          <div className="prod-unit">Stok: {p.stok}</div>
+                        </div>
+                        <div className="prod-actions">
+                          <button
+                            className="btn btn-outline btn-icon btn-sm"
+                            onClick={() => openEdit(p)}
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            className="btn btn-red btn-icon btn-sm"
+                            onClick={() => deleteProduct(p.id)}
+                            title="Hapus"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           ) : (
             <div
@@ -401,7 +335,6 @@ function AdminProducts() {
                     <th>Kategori</th>
                     <th>Harga</th>
                     <th>Stok</th>
-                    <th>Mitra</th>
                     <th>Status</th>
                     <th>Aksi</th>
                   </tr>
@@ -417,22 +350,20 @@ function AdminProducts() {
                             gap: ".6rem",
                           }}
                         >
-                          <span style={{ fontSize: "1.5rem" }}>{p.emoji}</span>
-                          {p.name}
+                          <span style={{ fontSize: "1.5rem" }}>🌾</span>
+                          {p.nama}
                         </div>
                       </td>
-                      <td>{p.cat}</td>
+                      <td>{p.Kategori?.nama}</td>
                       <td style={{ fontWeight: 600 }}>
-                        {p.price}
-                        {p.unit}
+                        {formatRupiah(p.harga)}
                       </td>
-                      <td>{p.stock}</td>
-                      <td>{p.mitra}</td>
+                      <td>{p.stok}</td>
                       <td>
                         <span
-                          className={`badge ${getStatusBadgeClass(p.status)}`}
+                          className={`badge ${getStatusBadgeClass(p.stok)}`}
                         >
-                          {p.status}
+                          {p.stok > 20 ? "aktif" : p.stok > 0 ? "stok menipis" : "kosong"}
                         </span>
                       </td>
                       <td>
@@ -464,8 +395,6 @@ function AdminProducts() {
           >
             <button className="pg-btn">←</button>
             <button className="pg-btn active">1</button>
-            <button className="pg-btn">2</button>
-            <button className="pg-btn">3</button>
             <button className="pg-btn">→</button>
             <span className="pg-info">
               Menampilkan {filtered.length} dari {products.length} produk
@@ -506,24 +435,14 @@ function AdminProducts() {
               <div className="form-field">
                 <label>Kategori</label>
                 <select
-                  value={form.kat}
-                  onChange={(e) => setForm({ ...form, kat: e.target.value })}
+                  value={form.id_kategori}
+                  onChange={(e) => setForm({ ...form, id_kategori: e.target.value })}
                 >
-                  <option>Beras Putih</option>
-                  <option>Beras Ketan</option>
-                  <option>Ubi Jalar</option>
-                  <option>Ubi Kayu</option>
-                  <option>Beras Merah</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.id}>{c.nama}</option>
+                  ))}
                 </select>
               </div>
-            </div>
-            <div className="form-field">
-              <label>Deskripsi</label>
-              <textarea
-                value={form.desc}
-                onChange={(e) => setForm({ ...form, desc: e.target.value })}
-                placeholder="Deskripsi singkat produk..."
-              ></textarea>
             </div>
             <div className="form-row">
               <div className="form-field">
@@ -536,23 +455,6 @@ function AdminProducts() {
                 />
               </div>
               <div className="form-field">
-                <label>Satuan</label>
-                <select
-                  value={form.unit}
-                  onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                >
-                  <option>kg</option>
-                  <option>5 kg</option>
-                  <option>10 kg</option>
-                  <option>25 kg</option>
-                  <option>50 kg</option>
-                  <option>ikat</option>
-                  <option>pcs</option>
-                </select>
-              </div>
-            </div>
-            <div className="form-row">
-              <div className="form-field">
                 <label>Stok</label>
                 <input
                   type="number"
@@ -561,27 +463,10 @@ function AdminProducts() {
                   placeholder="100"
                 />
               </div>
-              <div className="form-field">
-                <label>Mitra</label>
-                <select
-                  value={form.mitra}
-                  onChange={(e) => setForm({ ...form, mitra: e.target.value })}
-                >
-                  <option>Mitra Pak Hendra</option>
-                  <option>Mitra Bu Siti</option>
-                  <option>Mitra Pak Darto</option>
-                </select>
-              </div>
             </div>
             <div className="form-field">
-              <label>Status</label>
-              <select
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
-              >
-                <option>Aktif</option>
-                <option>Nonaktif</option>
-              </select>
+              <label>Foto Produk (Opsional)</label>
+              <input type="file" onChange={handleFileChange} accept="image/*" />
             </div>
             <div className="modal-footer">
               <button

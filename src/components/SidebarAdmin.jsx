@@ -1,9 +1,18 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import api from "../utils/api";
 
 function SidebarAdmin() {
   const location = useLocation();
+  const [user, setUser] = useState();
 
   const isActive = (path) => location.pathname === path;
+
+  useEffect(() => {
+    api.get("/auth/me").then((res) => {
+      setUser(res.data.data);
+    });
+  }, []);
 
   return (
     <aside className="sidebar">
@@ -54,13 +63,16 @@ function SidebarAdmin() {
         <div className="admin-profile">
           <div className="admin-avatar">👨‍💼</div>
           <div>
-            <div className="admin-name">Admin PanenKu</div>
-            <div className="admin-email">admin@panenku.com</div>
+            <div className="admin-name">{user?.nama}</div>
+            <div className="admin-email">{user?.email}</div>
           </div>
           <button
             className="btn-logout"
             title="Logout"
-            onClick={() => (window.location.href = "/login")}
+            onClick={() => {
+              localStorage.removeItem("token");
+              window.location.href = "/login";
+            }}
           >
             🚪
           </button>
