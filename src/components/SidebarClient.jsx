@@ -89,7 +89,7 @@ function SidebarClient() {
             className="btn-logout"
             onClick={() => {
               localStorage.removeItem("token");
-              window.location.href = "/login";
+              navigate("/login");
             }}
           >
             🚪

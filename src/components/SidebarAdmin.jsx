@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
 function SidebarAdmin() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [user, setUser] = useState();
 
   const isActive = (path) => location.pathname === path;
@@ -71,7 +72,7 @@ function SidebarAdmin() {
             title="Logout"
             onClick={() => {
               localStorage.removeItem("token");
-              window.location.href = "/login";
+              navigate("/login");
             }}
           >
             🚪
