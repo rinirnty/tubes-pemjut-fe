@@ -1,97 +1,48 @@
 import { useEffect, useRef, useState } from "react";
 import SidebarAdmin from "../../components/SidebarAdmin";
+import api from "../../utils/api";
 
-const initialOrders = [
-  {
-    id: 1,
-    inv: "#INV-0284",
-    buyer: "Ibu Ratna",
-    phone: "081234567890",
-    product: "Beras Pandan Wangi 5kg x2",
-    mitra: "Pak Hendra",
-    total: "Rp 130.000",
-    pay: "lunas",
-    status: "selesai",
-    tgl: "19 Mei 2025",
-    addr: "Jl. Merdeka No.5 Bandung",
-  },
-  {
-    id: 2,
-    inv: "#INV-0283",
-    buyer: "Pak Darto",
-    phone: "081234567891",
-    product: "Ubi Jalar Merah 10kg",
-    mitra: "Pak Darto",
-    total: "Rp 80.000",
-    pay: "lunas",
-    status: "dikirim",
-    tgl: "19 Mei 2025",
-    addr: "Jl. Asia Afrika No.10 Bandung",
-  },
-  {
-    id: 3,
-    inv: "#INV-0282",
-    buyer: "Bu Siti",
-    phone: "081234567892",
-    product: "Beras Ketan Putih 3kg",
-    mitra: "Bu Siti",
-    total: "Rp 84.000",
-    pay: "lunas",
-    status: "diproses",
-    tgl: "18 Mei 2025",
-    addr: "Jl. Kebon Kawung No.12 Bandung",
-  },
-  {
-    id: 4,
-    inv: "#INV-0281",
-    buyer: "Pak Budi",
-    phone: "081234567893",
-    product: "Singkong Segar 20kg",
-    mitra: "Pak Budi",
-    total: "Rp 100.000",
-    pay: "belum bayar",
-    status: "pending",
-    tgl: "18 Mei 2025",
-    addr: "Jl. Cihampelas No.8 Bandung",
-  },
-  {
-    id: 5,
-    inv: "#INV-0280",
-    buyer: "CV Maju",
-    phone: "081234567894",
-    product: "Beras IR 64 5kg x4",
-    mitra: "Pak Hendra",
-    total: "Rp 220.000",
-    pay: "lunas",
-    status: "selesai",
-    tgl: "15 Mei 2025",
-    addr: "Jl. Gagak No.5 Bandung",
-  },
-];
-
-const statusFlow = ["pending", "diproses", "dikirim", "selesai"];
+const statusFlow = ["dibayar", "diproses", "dikirim", "selesai"];
 const statusBadgeMap = {
-  selesai: "badge-green",
-  dikirim: "badge-blue",
+  belum_bayar: "badge-red",
+  dibayar: "badge-green",
   diproses: "badge-gold",
-  pending: "badge-gray",
+  dikirim: "badge-blue",
+  selesai: "badge-green",
   dibatalkan: "badge-red",
 };
 const payBadgeMap = { lunas: "badge-green", "belum bayar": "badge-red" };
 
 function AdminOrders() {
-  const [orders, setOrders] = useState(initialOrders);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("semua");
   const [search, setSearch] = useState("");
   const [showDetail, setShowDetail] = useState(false);
   const [selected, setSelected] = useState(null);
   const revealRefs = useRef([]);
 
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const orderRes = await api.get(`/orders`);
+      console.log(orderRes.data);
+
+      setOrders(orderRes.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filtered = orders.filter((o) => {
     const matchesStatus = filterStatus === "semua" || o.status === filterStatus;
-    const matchesSearch =
-      o.inv.toLowerCase().includes(search.toLowerCase()) ||
-      o.buyer.toLowerCase().includes(search.toLowerCase());
+
+    const matchesSearch = String(o.id_order)
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
     return matchesStatus && matchesSearch;
   });
 
@@ -100,16 +51,20 @@ function AdminOrders() {
     setShowDetail(true);
   };
 
-  const nextStatus = () => {
-    const curIdx = statusFlow.indexOf(selected.status);
-    if (curIdx < statusFlow.length - 1) {
-      const updatedOrder = { ...selected, status: statusFlow[curIdx + 1] };
-      setOrders(orders.map((o) => (o.id === selected.id ? updatedOrder : o)));
-      setSelected(updatedOrder);
+  const updateStatus = async (newStatus, id_order = null) => {
+    try {
+      await api.patch(`/orders/${id_order || selected.id_order}/update`, {
+        status: newStatus,
+      });
+      fetchOrders();
+      setShowDetail(false);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   useEffect(() => {
+    fetchOrders();
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e, i) => {
@@ -153,9 +108,9 @@ function AdminOrders() {
               </div>
               <div>
                 <div className="stat-value">
-                  {orders.filter((o) => o.status === "pending").length}
+                  {orders.filter((o) => o.status === "dibayar").length}
                 </div>
-                <div className="stat-label">Pending</div>
+                <div className="stat-label">Dibayar</div>
               </div>
             </div>
             <div className="stat-card">
@@ -204,10 +159,10 @@ function AdminOrders() {
               Semua ({orders.length})
             </button>
             <button
-              className={`filter-btn ${filterStatus === "pending" ? "active" : ""}`}
-              onClick={() => setFilterStatus("pending")}
+              className={`filter-btn ${filterStatus === "dibayar" ? "active" : ""}`}
+              onClick={() => setFilterStatus("dibayar")}
             >
-              ⏳ Pending ({orders.filter((o) => o.status === "pending").length})
+              ⏳ Dibayar ({orders.filter((o) => o.status === "dibayar").length})
             </button>
             <button
               className={`filter-btn ${filterStatus === "diproses" ? "active" : ""}`}
@@ -259,10 +214,7 @@ function AdminOrders() {
                 <tr>
                   <th>Invoice</th>
                   <th>Pembeli</th>
-                  <th>Produk</th>
-                  <th>Mitra</th>
                   <th>Total</th>
-                  <th>Bayar</th>
                   <th>Status</th>
                   <th>Tgl</th>
                   <th>Aksi</th>
@@ -272,83 +224,54 @@ function AdminOrders() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="9"
-                      style={{
-                        textAlign: "center",
-                        padding: "2rem",
-                        color: "var(--muted)",
-                      }}
+                      colSpan="6"
+                      style={{ textAlign: "center", padding: "2rem" }}
                     >
                       Tidak ada pesanan
                     </td>
                   </tr>
                 ) : (
                   filtered.map((o) => (
-                    <tr key={o.id}>
+                    <tr key={o.id_order}>
+                      <td>#INV-{String(o.id_order).padStart(4, "0")}</td>
+
+                      <td>{o.user?.nama}</td>
+
                       <td>
-                        <span
-                          style={{
-                            fontFamily: "DM Mono,monospace",
-                            fontSize: ".8rem",
-                            color: "var(--brown)",
-                          }}
-                        >
-                          {o.inv}
-                        </span>
+                        Rp {Number(o.total_harga).toLocaleString("id-ID")}
                       </td>
-                      <td>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: ".5rem",
-                          }}
-                        >
-                          <div
-                            className="avatar"
-                            style={{
-                              background: "var(--cream2)",
-                              fontSize: ".75rem",
-                            }}
-                          >
-                            {o.buyer[0]}
-                          </div>
-                          {o.buyer}
-                        </div>
-                      </td>
-                      <td
-                        style={{
-                          fontSize: ".8rem",
-                          maxWidth: "140px",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {o.product}
-                      </td>
-                      <td>{o.mitra}</td>
-                      <td style={{ fontWeight: 600 }}>{o.total}</td>
-                      <td>
-                        <span className={`badge ${payBadgeMap[o.pay]}`}>
-                          {o.pay}
-                        </span>
-                      </td>
+
                       <td>
                         <span className={`badge ${statusBadgeMap[o.status]}`}>
                           {o.status}
                         </span>
                       </td>
-                      <td style={{ fontSize: ".78rem", color: "var(--muted)" }}>
-                        {o.tgl}
-                      </td>
+
                       <td>
+                        {new Date(o.createdAt).toLocaleDateString("id-ID")}
+                      </td>
+
+                      <td style={{ display: "flex", gap: ".5rem" }}>
                         <button
                           className="btn btn-outline btn-sm"
                           onClick={() => openDetail(o)}
                         >
                           Detail
                         </button>
+                        {o.status !== "dibatalkan" &&
+                          o.status !== "selesai" &&
+                          o.status !== "dikirim" && (
+                            <button
+                              className="btn btn-outline btn-sm"
+                              onClick={updateStatus.bind(
+                                null,
+                                "dibatalkan",
+                                o.id_order,
+                              )}
+                            >
+                              Batalkan
+                            </button>
+                          )}
                       </td>
                     </tr>
                   ))
@@ -392,120 +315,101 @@ function AdminOrders() {
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
                   gap: "1rem",
-                  marginBottom: "1.25rem",
+                  marginBottom: "1rem",
                 }}
               >
                 <div>
-                  <div
-                    style={{
-                      fontSize: ".75rem",
-                      color: "var(--muted)",
-                      marginBottom: ".25rem",
-                    }}
-                  >
-                    Pembeli
-                  </div>
-                  <div style={{ fontWeight: 600 }}>{selected.buyer}</div>
-                  <div style={{ fontSize: ".8rem", color: "var(--muted)" }}>
-                    {selected.phone}
+                  <div className="text-muted">Pembeli</div>
+                  <div style={{ fontWeight: 600 }}>{selected.user?.nama}</div>
+                  <div style={{ fontSize: ".8rem" }}>
+                    {selected.user?.email}
                   </div>
                 </div>
+
                 <div>
-                  <div
-                    style={{
-                      fontSize: ".75rem",
-                      color: "var(--muted)",
-                      marginBottom: ".25rem",
-                    }}
-                  >
-                    Alamat
+                  <div className="text-muted">Invoice</div>
+                  <div style={{ fontWeight: 600 }}>
+                    #INV-{String(selected.id_order).padStart(4, "0")}
                   </div>
-                  <div style={{ fontSize: ".85rem" }}>{selected.addr}</div>
                 </div>
+
                 <div>
+                  <div className="text-muted">Status</div>
+                  <span className={`badge ${statusBadgeMap[selected.status]}`}>
+                    {selected.status}
+                  </span>
+                </div>
+
+                <div>
+                  <div className="text-muted">Total</div>
                   <div
                     style={{
-                      fontSize: ".75rem",
-                      color: "var(--muted)",
-                      marginBottom: ".25rem",
-                    }}
-                  >
-                    Total
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "Playfair Display,serif",
-                      fontSize: "1.1rem",
                       fontWeight: 700,
                       color: "var(--brown)",
                     }}
                   >
-                    {selected.total}
+                    Rp {Number(selected.total_harga).toLocaleString("id-ID")}
                   </div>
                 </div>
               </div>
               <div
                 style={{
                   background: "var(--cream)",
-                  borderRadius: "12px",
                   padding: "1rem",
-                  marginBottom: "1.25rem",
+                  borderRadius: "12px",
+                  marginBottom: "1rem",
                 }}
               >
-                <div
-                  style={{
-                    fontSize: ".75rem",
-                    color: "var(--muted)",
-                    marginBottom: ".4rem",
-                  }}
-                >
-                  Produk
-                </div>
-                <div style={{ fontWeight: 500 }}>{selected.product}</div>
-              </div>
-              <div
-                style={{
-                  fontWeight: 600,
-                  fontSize: ".88rem",
-                  marginBottom: ".75rem",
-                  color: "var(--text)",
-                }}
-              >
-                Status Pengiriman
-              </div>
-              <div className="timeline">
-                {statusFlow.map((s, si) => {
-                  const curIdx = statusFlow.indexOf(selected.status);
-                  return (
-                    <div key={si} className="tl-item">
+                <h4>Daftar Produk</h4>
+
+                {selected.order_items?.map((item) => (
+                  <div
+                    key={item.id_order_item}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: ".5rem 0",
+                      borderBottom: "1px solid #eee",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{item.produk?.nama}</div>
+
                       <div
-                        className={`tl-dot ${si < curIdx ? "done" : si === curIdx ? "current" : "pending"}`}
-                      ></div>
-                      <div>
-                        <div
-                          className="tl-title"
-                          style={{
-                            color:
-                              si <= curIdx ? "var(--text)" : "var(--muted)",
-                          }}
-                        >
-                          {
-                            [
-                              "Pesanan Diterima",
-                              "Sedang Diproses",
-                              "Sedang Dikirim",
-                              "Pesanan Selesai",
-                            ][si]
-                          }
-                        </div>
-                        <div className="tl-time">
-                          {si <= curIdx ? selected.tgl : "Menunggu"}
-                        </div>
+                        style={{
+                          fontSize: ".8rem",
+                          color: "var(--muted)",
+                        }}
+                      >
+                        {item.jumlah} x Rp{" "}
+                        {Number(item.harga).toLocaleString("id-ID")}
                       </div>
                     </div>
-                  );
-                })}
+
+                    <div>
+                      Rp{" "}
+                      {Number(item.harga * item.jumlah).toLocaleString("id-ID")}
+                    </div>
+                  </div>
+                ))}
               </div>
+              {selected.bukti_bayar && (
+                <div style={{ marginBottom: "1rem" }}>
+                  <h4>Bukti Pembayaran</h4>
+
+                  <img
+                    src={`${api.defaults.baseURL}/orders/bukti/${selected.id_order}`}
+                    alt="Bukti Pembayaran"
+                    style={{
+                      width: "100%",
+                      maxHeight: "350px",
+                      objectFit: "contain",
+                      borderRadius: "12px",
+                      border: "1px solid #ddd",
+                    }}
+                  />
+                </div>
+              )}
             </div>
             <div className="modal-footer">
               <button
@@ -514,13 +418,29 @@ function AdminOrders() {
               >
                 Tutup
               </button>
-              {selected.status !== "selesai" &&
-                selected.status !== "dibatalkan" && (
-                  <button className="btn btn-primary" onClick={nextStatus}>
-                    → Tandai{" "}
-                    {statusFlow[statusFlow.indexOf(selected.status) + 1]}
-                  </button>
-                )}
+              {selected.status == "dibayar" ? (
+                <button
+                  className="btn btn-primary"
+                  onClick={updateStatus.bind(
+                    null,
+                    "diproses",
+                    selected.id_order,
+                  )}
+                >
+                  Proses Pesanan
+                </button>
+              ) : selected.status == "diproses" ? (
+                <button
+                  className="btn btn-primary"
+                  onClick={updateStatus.bind(
+                    null,
+                    "dikirim",
+                    selected.id_order,
+                  )}
+                >
+                  Kirim Pesanan
+                </button>
+              ) : null}
             </div>
           </div>
         </div>

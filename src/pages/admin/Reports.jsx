@@ -18,14 +18,6 @@ const months = [
 const monthVals = [28, 32, 35, 41, 48, 0, 0, 0, 0, 0, 0, 0];
 const maxM = Math.max(...monthVals.filter((v) => v > 0));
 
-const topProds = [
-  { name: "🍚 Beras Pandan Wangi", pct: 40, color: "var(--brown)" },
-  { name: "🌾 Beras Ketan Putih", pct: 24, color: "var(--green)" },
-  { name: "🍠 Ubi Jalar Merah", pct: 16, color: "var(--gold)" },
-  { name: "🟤 Singkong Segar", pct: 12, color: "var(--brown3)" },
-  { name: "🌿 Beras Merah", pct: 8, color: "var(--green2)" },
-];
-
 const komisis = [
   {
     id: 1,
@@ -137,9 +129,48 @@ const statusBadgeMap = {
 
 function AdminReports() {
   const [period, setPeriod] = useState("bulan");
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const revealRefs = useRef([]);
 
+  const productStats = {};
+  orders.forEach((order) => {
+    order.order_items?.forEach((item) => {
+      const name = item.produk?.nama;
+
+      if (!productStats[name]) {
+        productStats[name] = 0;
+      }
+
+      productStats[name] += item.jumlah;
+    });
+  });
+
+  const topProducts = Object.entries(productStats)
+    .map(([name, qty]) => ({
+      name,
+      qty,
+    }))
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 5);
+
   useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        setLoading(true);
+
+        const res = await api.get("/orders");
+
+        setOrders(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReports();
+
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e, i) => {
@@ -151,9 +182,27 @@ function AdminReports() {
       },
       { threshold: 0.1 },
     );
+
     revealRefs.current.forEach((el) => el && obs.observe(el));
+
     return () => obs.disconnect();
   }, []);
+
+  const totalRevenue = orders.reduce(
+    (sum, order) => sum + Number(order.total_harga),
+    0,
+  );
+
+  const totalOrders = orders.length;
+
+  const completedOrders = orders.filter((o) => o.status === "selesai").length;
+
+  const paidOrders = orders.filter((o) => o.status !== "dibatalkan").length;
+
+  const canceledOrders = orders.filter((o) => o.status === "dibatalkan").length;
+
+  const avgTransaction =
+    totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", overflow: "hidden" }}>
@@ -197,7 +246,9 @@ function AdminReports() {
                 💰
               </div>
               <div>
-                <div className="stat-value">Rp 48,2jt</div>
+                <div className="stat-value">
+                  Rp {totalRevenue.toLocaleString("id-ID")}
+                </div>
                 <div className="stat-label">Pendapatan Bulan Ini</div>
                 <div className="stat-change up">▲ 12% vs bulan lalu</div>
               </div>
@@ -217,7 +268,7 @@ function AdminReports() {
                 📦
               </div>
               <div>
-                <div className="stat-value">284</div>
+                <div className="stat-value">{completedOrders}</div>
                 <div className="stat-label">Pesanan Selesai</div>
                 <div className="stat-change up">▲ 35 vs bulan lalu</div>
               </div>
@@ -282,17 +333,18 @@ function AdminReports() {
                 </div>
               </div>
               <div className="bar-chart-h">
-                {topProds.map((p, i) => (
-                  <div key={i} className="bh-row">
-                    <div className="bh-label" style={{ fontSize: ".75rem" }}>
-                      {p.name}
-                    </div>
+                {topProducts.map((product) => (
+                  <div key={product.name} className="bh-row">
+                    <div className="bh-label">{product.name}</div>
+
                     <div className="bh-bar-wrap">
                       <div
                         className="bh-bar"
-                        style={{ width: `${p.pct}%`, background: p.color }}
+                        style={{
+                          width: `${product.qty * 10}%`,
+                        }}
                       >
-                        <span className="bh-val">{p.pct}%</span>
+                        <span className="bh-val">{product.qty} Terjual</span>
                       </div>
                     </div>
                   </div>
@@ -387,7 +439,7 @@ function AdminReports() {
                       color: "var(--brown)",
                     }}
                   >
-                    284
+                    {totalOrders}
                   </div>
                 </div>
                 <div
@@ -415,7 +467,7 @@ function AdminReports() {
                       color: "var(--green)",
                     }}
                   >
-                    Rp 170rb
+                    Rp {avgTransaction.toLocaleString("id-ID")}
                   </div>
                 </div>
                 <div
@@ -443,7 +495,7 @@ function AdminReports() {
                       color: "var(--green)",
                     }}
                   >
-                    271
+                    {paidOrders}
                   </div>
                 </div>
                 <div
@@ -471,7 +523,7 @@ function AdminReports() {
                       color: "var(--red)",
                     }}
                   >
-                    13
+                    {canceledOrders}
                   </div>
                 </div>
               </div>
@@ -587,48 +639,38 @@ function AdminReports() {
                 </tr>
               </thead>
               <tbody>
-                {transaksis.map((t) => (
-                  <tr key={t.id}>
+                {orders.map((order) => (
+                  <tr key={order.id_order}>
+                    <td>#INV-{String(order.id_order).padStart(4, "0")}</td>
+
                     <td>
-                      <span
-                        style={{
-                          fontFamily: "DM Mono,monospace",
-                          fontSize: ".78rem",
-                          color: "var(--brown)",
-                        }}
-                      >
-                        {t.inv}
-                      </span>
+                      {new Date(order.createdAt).toLocaleDateString("id-ID")}
                     </td>
-                    <td style={{ fontSize: ".78rem", color: "var(--muted)" }}>
-                      {t.tgl}
-                    </td>
-                    <td style={{ fontSize: ".85rem" }}>{t.buyer}</td>
-                    <td>{t.mitra}</td>
-                    <td
-                      style={{
-                        fontSize: ".8rem",
-                        maxWidth: "120px",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {t.prod}
-                    </td>
-                    <td style={{ fontWeight: 600 }}>{t.total}</td>
-                    <td
-                      style={{
-                        fontFamily: "DM Mono,monospace",
-                        fontSize: ".82rem",
-                        color: "var(--green)",
-                      }}
-                    >
-                      {t.komisi}
-                    </td>
+
+                    <td>{order.user?.nama}</td>
+
+                    <td>-</td>
+
                     <td>
-                      <span className={`badge ${statusBadgeMap[t.status]}`}>
-                        {t.status}
+                      {order.order_items
+                        ?.map((item) => item.produk?.nama)
+                        .join(", ")}
+                    </td>
+
+                    <td>
+                      Rp {Number(order.total_harga).toLocaleString("id-ID")}
+                    </td>
+
+                    <td>
+                      Rp{" "}
+                      {Math.round(order.total_harga * 0.1).toLocaleString(
+                        "id-ID",
+                      )}
+                    </td>
+
+                    <td>
+                      <span className={`badge ${statusBadgeMap[order.status]}`}>
+                        {order.status}
                       </span>
                     </td>
                   </tr>

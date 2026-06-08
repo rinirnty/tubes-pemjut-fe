@@ -6,13 +6,31 @@ function SidebarAdmin() {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState();
+  const [orderCount, setOrderCount] = useState(0);
 
   const isActive = (path) => location.pathname === path;
 
   useEffect(() => {
-    api.get("/auth/me").then((res) => {
-      setUser(res.data.data);
-    });
+    const loadData = async () => {
+      try {
+        const [userRes, orderRes] = await Promise.all([
+          api.get("/auth/me"),
+          api.get("/orders"),
+        ]);
+
+        setUser(userRes.data.data);
+
+        const pendingOrders = orderRes.data.filter(
+          (o) => o.status !== "dibatalkan" && o.status !== "selesai",
+        );
+
+        setOrderCount(pendingOrders.length);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadData();
   }, []);
 
   return (
@@ -47,7 +65,7 @@ function SidebarAdmin() {
           className={`nav-item ${isActive("/admin/orders") ? "active" : ""}`}
         >
           <span className="nav-icon">📦</span> Pesanan{" "}
-          <span className="nav-badge">12</span>
+          {orderCount > 0 && <span className="nav-badge">{orderCount}</span>}
         </Link>
         <Link
           to="/admin/clients"
@@ -55,16 +73,12 @@ function SidebarAdmin() {
         >
           <span className="nav-icon">👥</span> Pengguna
         </Link>
-        <Link
+        {/* <Link
           to="/admin/reports"
           className={`nav-item ${isActive("/admin/reports") ? "active" : ""}`}
         >
           <span className="nav-icon">📈</span> Laporan
-        </Link>
-        <div className="sidebar-divider"></div>
-        <Link to="#" className="nav-item">
-          <span className="nav-icon">⚙️</span> Pengaturan
-        </Link>
+        </Link> */}
       </nav>
       <div className="sidebar-footer">
         <div className="admin-profile">

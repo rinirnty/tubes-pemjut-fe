@@ -1,86 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import SidebarAdmin from "../../components/SidebarAdmin";
-
-const days = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
-const vals = [3200000, 4100000, 2800000, 5600000, 4900000, 7200000, 6100000];
-const max = Math.max(...vals);
-
-const orders = [
-  {
-    inv: "#INV-0284",
-    buyer: "Ibu Ratna",
-    total: "Rp 65.000",
-    status: "selesai",
-  },
-  {
-    inv: "#INV-0283",
-    buyer: "Pak Darto",
-    total: "Rp 128.000",
-    status: "dikirim",
-  },
-  {
-    inv: "#INV-0282",
-    buyer: "Bu Siti",
-    total: "Rp 45.000",
-    status: "diproses",
-  },
-  {
-    inv: "#INV-0281",
-    buyer: "Pak Budi",
-    total: "Rp 210.000",
-    status: "pending",
-  },
-  {
-    inv: "#INV-0280",
-    buyer: "CV Maju",
-    total: "Rp 540.000",
-    status: "selesai",
-  },
-];
-
-const acts = [
-  {
-    icon: "🛒",
-    bg: "#EAF3DE",
-    title: "Pesanan baru dari Ibu Ratna",
-    time: "2 menit lalu",
-    amount: "+Rp 65.000",
-  },
-  {
-    icon: "🤝",
-    bg: "#FFF0E0",
-    title: "Mitra baru mendaftar: Toko Makmur",
-    time: "15 menit lalu",
-    amount: "",
-  },
-  {
-    icon: "💰",
-    bg: "#EAF6EA",
-    title: "Pembayaran QRIS berhasil #INV-0283",
-    time: "32 menit lalu",
-    amount: "+Rp 128.000",
-  },
-  {
-    icon: "📦",
-    bg: "#E0F0FF",
-    title: "Pesanan #INV-0281 dikirim",
-    time: "1 jam lalu",
-    amount: "",
-  },
-  {
-    icon: "⚠️",
-    bg: "#FDECEA",
-    title: "Stok Beras Ketan hampir habis",
-    time: "2 jam lalu",
-    amount: "",
-  },
-];
-
-const pendingMitra = [
-  { nama: "Toko Sumber Rejeki", toko: "Toko Sumber Rejeki", tgl: "18 Mei" },
-  { nama: "Warung Nasi Ibu Ani", toko: "Warung Nasi Ibu Ani", tgl: "17 Mei" },
-];
+import api from "../../utils/api";
 
 const statusBadge = {
   selesai: "badge-green",
@@ -91,42 +12,66 @@ const statusBadge = {
 };
 
 function AdminDashboard() {
-  const [mitra, setMitra] = useState(pendingMitra);
+  const [users, setUsers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const revealRefs = useRef([]);
 
-  const verif = (index) => {
-    const newMitra = [...mitra];
-    newMitra[index].status = "verified";
-    setMitra(newMitra);
-    setTimeout(() => {
-      setMitra((m) => m.filter((_, i) => i !== index));
-    }, 1200);
-  };
-
-  const tolak = (index) => {
-    const newMitra = [...mitra];
-    newMitra[index].status = "rejected";
-    setMitra(newMitra);
-    setTimeout(() => {
-      setMitra((m) => m.filter((_, i) => i !== index));
-    }, 1200);
-  };
-
   useEffect(() => {
-    const obs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e, i) => {
-          if (e.isIntersecting) {
-            setTimeout(() => e.target.classList.add("visible"), i * 100);
-            obs.unobserve(e.target);
-          }
-        });
-      },
-      { threshold: 0.1 },
-    );
-    revealRefs.current.forEach((el) => el && obs.observe(el));
-    return () => obs.disconnect();
+    const fetchData = async () => {
+      try {
+        const [usersRes, productsRes, ordersRes] = await Promise.all([
+          api.get("/users"),
+          api.get("/products"),
+          api.get("/orders"),
+        ]);
+
+        setUsers(usersRes.data.data || []);
+        setProducts(productsRes.data.data || []);
+        setOrders(ordersRes.data || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
+
+  const totalPendapatan = orders
+    .filter((o) => o.status === "dibayar")
+    .reduce((sum, o) => sum + Number(o.total_harga || 0), 0);
+
+  const totalPesanan = orders.length;
+
+  const totalUser = users.length;
+
+  const stokMenipis = products
+    .filter((p) => p.stok <= 10)
+    .sort((a, b) => a.stok - b.stok)
+    .slice(0, 5);
+
+  const produkTerlaris = {};
+
+  orders.forEach((order) => {
+    order.order_items?.forEach((item) => {
+      const nama = item.produk?.nama;
+
+      if (!nama) return;
+
+      produkTerlaris[nama] = (produkTerlaris[nama] || 0) + Number(item.jumlah);
+    });
+  });
+
+  const topProducts = Object.entries(produkTerlaris)
+    .map(([nama, total]) => ({
+      nama,
+      total,
+    }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 5);
 
   return (
     <>
@@ -148,18 +93,16 @@ function AdminDashboard() {
         </div>
 
         <div className="page-content">
-          <div
-            className="stat-grid reveal"
-            ref={(el) => (revealRefs.current[0] = el)}
-          >
+          <div className="stat-grid" ref={(el) => (revealRefs.current[0] = el)}>
             <div className="stat-card">
               <div className="stat-icon" style={{ background: "#EAF3DE" }}>
                 💰
               </div>
               <div>
-                <div className="stat-value">Rp 48,2jt</div>
+                <div className="stat-value">
+                  Rp {(totalPendapatan || 0).toLocaleString("id-ID")}
+                </div>
                 <div className="stat-label">Total Pendapatan</div>
-                <div className="stat-change up">▲ 12% dari bulan lalu</div>
               </div>
             </div>
             <div className="stat-card">
@@ -167,9 +110,8 @@ function AdminDashboard() {
                 📦
               </div>
               <div>
-                <div className="stat-value">284</div>
+                <div className="stat-value">{totalPesanan}</div>
                 <div className="stat-label">Total Pesanan</div>
-                <div className="stat-change up">▲ 8% dari bulan lalu</div>
               </div>
             </div>
             <div className="stat-card">
@@ -177,54 +119,57 @@ function AdminDashboard() {
                 👥
               </div>
               <div>
-                <div className="stat-value">1.240</div>
+                <div className="stat-value">{totalUser}</div>
                 <div className="stat-label">Total Pengguna</div>
-                <div className="stat-change up">▲ 24 baru minggu ini</div>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon" style={{ background: "#FFF8E0" }}>
-                🤝
-              </div>
-              <div>
-                <div className="stat-value">83</div>
-                <div className="stat-label">Mitra Aktif</div>
-                <div className="stat-change down">▼ 2 nonaktif bulan ini</div>
               </div>
             </div>
           </div>
 
           <div
-            className="grid-2 reveal"
+            className="grid-2"
             ref={(el) => (revealRefs.current[1] = el)}
             style={{ marginBottom: "1.25rem" }}
           >
             <div className="chart-wrap">
-              <div className="chart-header">
-                <div className="section-title" style={{ margin: 0 }}>
-                  Penjualan 7 Hari
+              <div className="section-title">Ringkasan Pesanan</div>
+
+              <div className="stat-grid">
+                <div className="stat-card">
+                  <div className="stat-value">
+                    {orders.filter((o) => o.status === "belum_bayar").length}
+                  </div>
+                  <div className="stat-label">Belum Bayar</div>
                 </div>
-                <span className="badge badge-green">↑ Naik</span>
-              </div>
-              <div className="chart-bars">
-                {days.map((d, i) => {
-                  const pct = ((vals[i] / max) * 100).toFixed(0);
-                  return (
-                    <div key={i} className="bar-col">
-                      <div className="bar-val">
-                        Rp{(vals[i] / 1000000).toFixed(1)}jt
-                      </div>
-                      <div
-                        className="bar"
-                        style={{
-                          height: `${pct}%`,
-                          background: i === 5 ? "var(--green)" : "var(--brown)",
-                        }}
-                      ></div>
-                      <div className="bar-label">{d}</div>
-                    </div>
-                  );
-                })}
+                <div className="stat-card">
+                  <div className="stat-value">
+                    {orders.filter((o) => o.status === "dibayar").length}
+                  </div>
+                  <div className="stat-label">Dibayar</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">
+                    {orders.filter((o) => o.status === "diproses").length}
+                  </div>
+                  <div className="stat-label">Diproses</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">
+                    {orders.filter((o) => o.status === "dikirim").length}
+                  </div>
+                  <div className="stat-label">Dikirim</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">
+                    {orders.filter((o) => o.status === "selesai").length}
+                  </div>
+                  <div className="stat-label">Selesai</div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-value">
+                    {orders.filter((o) => o.status === "dibatalkan").length}
+                  </div>
+                  <div className="stat-label">Dibatalkan</div>
+                </div>
               </div>
             </div>
             <div className="chart-wrap">
@@ -233,103 +178,53 @@ function AdminDashboard() {
                   Produk Terlaris
                 </div>
               </div>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "2rem" }}
-              >
-                <div className="donut-wrap">
-                  <svg width="120" height="120" viewBox="0 0 120 120">
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="45"
-                      fill="none"
-                      stroke="var(--cream2)"
-                      strokeWidth="18"
-                    />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="45"
-                      fill="none"
-                      stroke="var(--brown)"
-                      strokeWidth="18"
-                      strokeDasharray="113 170"
-                      strokeDashoffset="0"
-                    />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="45"
-                      fill="none"
-                      stroke="var(--green)"
-                      strokeWidth="18"
-                      strokeDasharray="68 215"
-                      strokeDashoffset="-113"
-                    />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="45"
-                      fill="none"
-                      stroke="var(--gold)"
-                      strokeWidth="18"
-                      strokeDasharray="45 238"
-                      strokeDashoffset="-181"
-                    />
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="45"
-                      fill="none"
-                      stroke="var(--brown3)"
-                      strokeWidth="18"
-                      strokeDasharray="57 226"
-                      strokeDashoffset="-226"
-                    />
-                  </svg>
-                  <div className="donut-center">
-                    <span className="donut-pct">50+</span>
-                    <span className="donut-sub">Produk</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="legend-item">
-                    <div
-                      className="legend-dot"
-                      style={{ background: "var(--brown)" }}
-                    ></div>{" "}
-                    Beras Putih — 40%
-                  </div>
-                  <div className="legend-item">
-                    <div
-                      className="legend-dot"
-                      style={{ background: "var(--green)" }}
-                    ></div>{" "}
-                    Beras Ketan — 24%
-                  </div>
-                  <div className="legend-item">
-                    <div
-                      className="legend-dot"
-                      style={{ background: "var(--gold)" }}
-                    ></div>{" "}
-                    Ubi Jalar — 16%
-                  </div>
-                  <div className="legend-item">
-                    <div
-                      className="legend-dot"
-                      style={{ background: "var(--brown3)" }}
-                    ></div>{" "}
-                    Lainnya — 20%
-                  </div>
-                </div>
+              <div style={{ width: "100%" }}>
+                {topProducts.length === 0 ? (
+                  <p>Belum ada data penjualan</p>
+                ) : (
+                  topProducts.map((p, index) => {
+                    const maxSold = topProducts[0]?.total || 1;
+                    const percent = (p.total / maxSold) * 100;
+
+                    return (
+                      <div key={index} style={{ marginBottom: "1rem" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            marginBottom: ".25rem",
+                          }}
+                        >
+                          <span>{p.nama}</span>
+                          <span>{p.total} terjual</span>
+                        </div>
+
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "10px",
+                            background: "#eee",
+                            borderRadius: "10px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: `${percent}%`,
+                              height: "100%",
+                              background: "var(--green)",
+                              borderRadius: "10px",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
 
-          <div
-            className="grid-2 reveal"
-            ref={(el) => (revealRefs.current[2] = el)}
-          >
+          <div className="grid-2" ref={(el) => (revealRefs.current[2] = el)}>
             <div className="table-wrap">
               <div className="table-header">
                 <div className="table-title">Pesanan Terbaru</div>
@@ -347,126 +242,59 @@ function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((o, i) => (
-                    <tr key={i}>
-                      <td>
-                        <span
-                          style={{
-                            fontFamily: "DM Mono, monospace",
-                            fontSize: ".8rem",
-                          }}
-                        >
-                          {o.inv}
-                        </span>
-                      </td>
-                      <td>{o.buyer}</td>
-                      <td style={{ fontWeight: 600 }}>{o.total}</td>
-                      <td>
-                        <span className={`badge ${statusBadge[o.status]}`}>
-                          {o.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {orders
+                    .slice()
+                    .reverse()
+                    .slice(0, 5)
+                    .map((o) => (
+                      <tr key={o.id_order}>
+                        <td>
+                          <span
+                            style={{
+                              fontFamily: "DM Mono, monospace",
+                              fontSize: ".8rem",
+                            }}
+                          >
+                            #{o.id_order}
+                          </span>
+                        </td>
+                        <td>{o.user?.nama}</td>
+                        <td style={{ fontWeight: 600 }}>
+                          Rp {Number(o.total_harga).toLocaleString("id-ID")}
+                        </td>
+                        <td>
+                          <span className={`badge ${statusBadge[o.status]}`}>
+                            {o.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
             <div className="card">
-              <div className="section-title">Aktivitas Terkini</div>
-              {acts.map((a, i) => (
-                <div key={i} className="activity-item">
-                  <div className="act-icon" style={{ background: a.bg }}>
-                    {a.icon}
+              <div className="section-title">Stok Menipis</div>
+
+              {stokMenipis.map((p) => (
+                <div key={p.id_produk} className="activity-item">
+                  <div
+                    className="act-icon"
+                    style={{
+                      background: "#FDECEA",
+                    }}
+                  >
+                    📦
                   </div>
+
                   <div style={{ flex: 1 }}>
-                    <div className="act-title">{a.title}</div>
-                    <div className="act-time">{a.time}</div>
+                    <div className="act-title">{p.nama}</div>
+
+                    <div className="act-time">Stok tersisa {p.stok}</div>
                   </div>
-                  {a.amount ? (
-                    <div className="act-amount">{a.amount}</div>
-                  ) : null}
                 </div>
               ))}
             </div>
           </div>
-
-          {mitra.length > 0 && (
-            <div
-              className="table-wrap reveal"
-              ref={(el) => (revealRefs.current[3] = el)}
-              style={{ marginTop: "1.25rem" }}
-            >
-              <div className="table-header">
-                <div className="table-title">⏳ Mitra Menunggu Verifikasi</div>
-                <Link to="/admin/clients" className="btn btn-outline btn-sm">
-                  Kelola Semua
-                </Link>
-              </div>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Nama</th>
-                    <th>Toko</th>
-                    <th>Daftar</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {mitra.map((m, i) => (
-                    <tr key={i} style={{ opacity: m.status ? 0 : 1 }}>
-                      <td>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: ".6rem",
-                          }}
-                        >
-                          <div
-                            className="avatar"
-                            style={{ background: "var(--cream2)" }}
-                          >
-                            🤝
-                          </div>
-                          {m.nama}
-                        </div>
-                      </td>
-                      <td>{m.toko}</td>
-                      <td style={{ fontSize: ".8rem", color: "var(--muted)" }}>
-                        {m.tgl}
-                      </td>
-                      <td>
-                        {m.status ? (
-                          <span
-                            className={`badge ${m.status === "verified" ? "badge-green" : "badge-red"}`}
-                          >
-                            {m.status === "verified"
-                              ? "✓ Terverifikasi"
-                              : "✕ Ditolak"}
-                          </span>
-                        ) : (
-                          <div style={{ display: "flex", gap: ".4rem" }}>
-                            <button
-                              className="btn btn-green btn-sm"
-                              onClick={() => verif(i)}
-                            >
-                              ✓ Verifikasi
-                            </button>
-                            <button
-                              className="btn btn-red btn-sm"
-                              onClick={() => tolak(i)}
-                            >
-                              ✕ Tolak
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
       </div>
     </>
