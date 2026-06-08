@@ -13,7 +13,11 @@ function ClientCart() {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    api.get("/auth/me").then(res => setProfile(res.data)).catch(console.error);
+    console.log(JSON.parse(localStorage.getItem("panenku_cart")));
+    api
+      .get("/auth/me")
+      .then((res) => setProfile(res.data))
+      .catch(console.error);
   }, []);
 
   const saveCart = (newCart) => {
@@ -79,11 +83,11 @@ function ClientCart() {
   const confirmPayment = async () => {
     try {
       const payload = {
-        id_user: profile.id,
-        items: cart.map(item => ({
+        id_user: profile.data.id_user,
+        items: cart.map((item) => ({
           id_produk: item.id,
-          jumlah: item.qty
-        }))
+          jumlah: item.qty,
+        })),
       };
 
       await api.post("/orders", payload);
@@ -91,7 +95,10 @@ function ClientCart() {
       saveCart([]);
       navigate("/client/history");
     } catch (err) {
-      alert("Gagal membuat pesanan: " + (err.response?.data?.message || err.message));
+      alert(
+        "Gagal membuat pesanan: " +
+          (err.response?.data?.message || err.message),
+      );
     }
   };
 
@@ -100,6 +107,9 @@ function ClientCart() {
     const s = String(countdown % 60).padStart(2, "0");
     return `${m}:${s}`;
   };
+
+  console.log("STATE CART:", cart);
+  console.log("LENGTH:", cart.length);
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", overflow: "hidden" }}>
@@ -120,7 +130,7 @@ function ClientCart() {
           </div>
         </div>
         <div className="page-content">
-          <div className="grid-2 reveal" style={{ alignItems: "start" }}>
+          <div className="grid-2" style={{ alignItems: "start" }}>
             <div>
               <div className="card" style={{ marginBottom: "1.25rem" }}>
                 <div
@@ -152,124 +162,75 @@ function ClientCart() {
                   </div>
                 ) : (
                   cart.map((item) => {
-                    const imageUrl = item.foto ? `${import.meta.env.VITE_API_URL || 'http://localhost:5500/api'}/products/images/${item.foto}` : null;
+                    const imageUrl = item.foto
+                      ? `${import.meta.env.VITE_API_URL || "http://localhost:5500/api"}/products/images/${item.foto}`
+                      : null;
                     return (
-                    <div key={item.id} className="cart-item">
-                      <div
-                        className="cart-thumb"
-                        style={{ background: "#FFF8E8", overflow: 'hidden' }}
-                      >
-                        {imageUrl ? (
-                          <img src={imageUrl} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : (
-                          "🌾"
-                        )}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div className="cart-name">
-                          {item.name}
-                        </div>
-                        <div className="cart-qty">
-                          <button
-                            className="qty-btn"
-                            onClick={() => changeQty(item.id, -1)}
-                          >
-                            −
-                          </button>
-                          <span
-                            style={{
-                              fontWeight: 600,
-                              minWidth: "24px",
-                              textAlign: "center",
-                            }}
-                          >
-                            {item.qty}
-                          </span>
-                          <button
-                            className="qty-btn"
-                            onClick={() => changeQty(item.id, 1)}
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div className="cart-price">
-                          {formatRupiah((item.harga || 0) * item.qty)}
-                        </div>
-                        <button
-                          className="btn btn-red btn-sm"
-                          style={{ marginTop: ".35rem" }}
-                          onClick={() => removeItem(item.id)}
+                      <div key={item.id} className="cart-item">
+                        <div
+                          className="cart-thumb"
+                          style={{ background: "#FFF8E8", overflow: "hidden" }}
                         >
-                          Hapus
-                        </button>
+                          {imageUrl ? (
+                            <img
+                              src={imageUrl}
+                              alt={item.name}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          ) : (
+                            "🌾"
+                          )}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div className="cart-name">{item.name}</div>
+                          <div className="cart-qty">
+                            <button
+                              className="qty-btn"
+                              onClick={() => changeQty(item.id, -1)}
+                            >
+                              −
+                            </button>
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                minWidth: "24px",
+                                textAlign: "center",
+                              }}
+                            >
+                              {item.qty}
+                            </span>
+                            <button
+                              className="qty-btn"
+                              onClick={() => changeQty(item.id, 1)}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                          <div className="cart-price">
+                            {formatRupiah((item.harga || 0) * item.qty)}
+                          </div>
+                          <button
+                            className="btn btn-red btn-sm"
+                            style={{ marginTop: ".35rem" }}
+                            onClick={() => removeItem(item.id)}
+                          >
+                            Hapus
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  )})
+                    );
+                  })
                 )}
-              </div>
-              <div className="card reveal">
-                <div className="section-title">📍 Alamat Pengiriman</div>
-                <div className="form-field">
-                  <label>Alamat Lengkap</label>
-                  <textarea
-                    rows="3"
-                    style={{
-                      border: "1.5px solid var(--border)",
-                      borderRadius: "10px",
-                      width: "100%",
-                      padding: ".65rem .9rem",
-                      fontFamily: "DM Sans, sans-serif",
-                      fontSize: ".875rem",
-                      outline: "none",
-                      resize: "none",
-                    }}
-                    defaultValue={profile?.alamat || ""}
-                  />
-                </div>
-                <div className="form-row">
-                  <div className="form-field">
-                    <label>Catatan Pesanan</label>
-                    <input
-                      type="text"
-                      placeholder="Contoh: Tolong dibungkus rapat"
-                      style={{
-                        border: "1.5px solid var(--border)",
-                        borderRadius: "10px",
-                        width: "100%",
-                        padding: ".65rem .9rem",
-                        fontFamily: "DM Sans, sans-serif",
-                        fontSize: ".875rem",
-                        outline: "none",
-                      }}
-                    />
-                  </div>
-                  <div className="form-field">
-                    <label>Waktu Pengiriman</label>
-                    <select
-                      style={{
-                        border: "1.5px solid var(--border)",
-                        borderRadius: "10px",
-                        width: "100%",
-                        padding: ".65rem .9rem",
-                        fontFamily: "DM Sans, sans-serif",
-                        fontSize: ".875rem",
-                        outline: "none",
-                        background: "#fff",
-                      }}
-                    >
-                      <option>Secepatnya</option>
-                      <option>Pagi (07.00–12.00)</option>
-                      <option>Siang (12.00–17.00)</option>
-                      <option>Sore (17.00–20.00)</option>
-                    </select>
-                  </div>
-                </div>
               </div>
             </div>
             <div>
-              <div className="summary-card reveal">
+              <div className="summary-card">
                 <div className="section-title">💳 Ringkasan Pembayaran</div>
                 <div className="summary-row">
                   <span>
@@ -322,7 +283,9 @@ function ClientCart() {
                   style={{ marginTop: ".5rem" }}
                   disabled={cart.length === 0}
                 >
-                  {showQr ? "✅ Selesai Bayar & Buat Pesanan" : "💳 Bayar via QRIS"}
+                  {showQr
+                    ? "✅ Selesai Bayar & Buat Pesanan"
+                    : "💳 Bayar via QRIS"}
                 </button>
                 <Link
                   to="/client/order"

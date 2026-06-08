@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import SidebarAdmin from "../../components/SidebarAdmin";
 import api from "../../utils/api";
 
-const roleBadgeMap = { pembeli: "badge-blue", admin: "badge-brown", mitra: "badge-brown" };
+const roleBadgeMap = {
+  pembeli: "badge-blue",
+  admin: "badge-brown",
+  mitra: "badge-brown",
+};
 const statusBadgeMap = {
   aktif: "badge-green",
   pending: "badge-gold",
@@ -15,6 +19,15 @@ function AdminClients() {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [modalType, setModalType] = useState("detail");
+  const [form, setForm] = useState({
+    nama: "",
+    email: "",
+    password: "",
+    telpon: "",
+    alamat: "",
+    role: "pembeli",
+  });
   const revealRefs = useRef([]);
 
   useEffect(() => {
@@ -24,7 +37,9 @@ function AdminClients() {
   const fetchUsers = async () => {
     try {
       const res = await api.get("/users");
-      const usersData = Array.isArray(res.data) ? res.data : (res.data.data || []);
+      const usersData = Array.isArray(res.data)
+        ? res.data
+        : res.data.data || [];
       setUsers(usersData);
     } catch (err) {
       console.error(err);
@@ -42,6 +57,7 @@ function AdminClients() {
   });
 
   const openModal = (user) => {
+    setModalType("detail");
     setSelected(user);
     setShowModal(true);
   };
@@ -49,13 +65,45 @@ function AdminClients() {
   const deleteUser = async (user) => {
     if (window.confirm(`Yakin ingin menghapus ${user.nama}?`)) {
       try {
-        await api.delete(`/users/${user.id}`);
+        await api.delete(`/users/${user.id_user}`);
         alert("Pengguna berhasil dihapus");
         fetchUsers();
         setShowModal(false);
       } catch (err) {
         alert("Gagal menghapus pengguna");
       }
+    }
+  };
+
+  const createUser = async () => {
+    try {
+      await api.post("/users", form);
+
+      alert("Pengguna berhasil ditambahkan");
+
+      setShowModal(false);
+      fetchUsers();
+    } catch (err) {
+      alert(err.response?.data?.message || "Gagal menambah pengguna");
+    }
+  };
+
+  const updateUser = async () => {
+    try {
+      const payload = { ...form };
+
+      if (!payload.password) {
+        delete payload.password;
+      }
+
+      await api.patch(`/users/${selected.id_user}`, payload);
+
+      alert("Pengguna berhasil diupdate");
+
+      setShowModal(false);
+      fetchUsers();
+    } catch (err) {
+      alert(err.response?.data?.message || "Gagal update pengguna");
     }
   };
 
@@ -91,9 +139,31 @@ function AdminClients() {
             <div className="breadcrumb">Admin / Pengguna</div>
           </div>
           <div className="topbar-right">
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                setModalType("create");
+
+                setForm({
+                  nama: "",
+                  email: "",
+                  password: "",
+                  telpon: "",
+                  alamat: "",
+                  role: "pembeli",
+                });
+
+                setShowModal(true);
+              }}
+            >
+              + Tambah Pengguna
+            </button>
+
             <button className="btn btn-outline btn-sm">📥 Export</button>
+
             <div className="topbar-btn">
-              🔔<div className="notif-dot"></div>
+              🔔
+              <div className="notif-dot"></div>
             </div>
           </div>
         </div>
@@ -204,7 +274,7 @@ function AdminClients() {
                   </tr>
                 ) : (
                   filtered.map((u) => (
-                    <tr key={u.id}>
+                    <tr key={u.id_user}>
                       <td>
                         <div
                           style={{
@@ -237,13 +307,15 @@ function AdminClients() {
                         </div>
                       </td>
                       <td>
-                        <span className={`badge ${roleBadgeMap[u.role] || 'badge-blue'}`}>
+                        <span
+                          className={`badge ${roleBadgeMap[u.role] || "badge-blue"}`}
+                        >
                           {u.role}
                         </span>
                       </td>
-                      <td style={{ fontSize: ".82rem" }}>{u.telpon || '-'}</td>
+                      <td style={{ fontSize: ".82rem" }}>{u.telpon || "-"}</td>
                       <td style={{ fontSize: ".78rem", color: "var(--muted)" }}>
-                        {new Date(u.createdAt).toLocaleDateString('id-ID')}
+                        {new Date(u.createdAt).toLocaleDateString("id-ID")}
                       </td>
                       <td>
                         <div style={{ display: "flex", gap: ".35rem" }}>
@@ -252,6 +324,27 @@ function AdminClients() {
                             onClick={() => openModal(u)}
                           >
                             Detail
+                          </button>
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() => {
+                              setModalType("edit");
+
+                              setSelected(u);
+
+                              setForm({
+                                nama: u.nama,
+                                email: u.email,
+                                password: "",
+                                telpon: u.telpon || "",
+                                alamat: u.alamat || "",
+                                role: u.role,
+                              });
+
+                              setShowModal(true);
+                            }}
+                          >
+                            ✏️
                           </button>
                           <button
                             className="btn btn-red btn-sm"
@@ -278,7 +371,139 @@ function AdminClients() {
         </div>
       </div>
 
-      {showModal && selected && (
+      {showModal && (modalType === "create" || modalType === "edit") && (
+        <div
+          className="modal-overlay show"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowModal(false);
+          }}
+        >
+          <div className="modal" style={{ maxWidth: "650px" }}>
+            <div className="modal-header">
+              <div className="modal-title">
+                {modalType === "create" ? "Tambah Pengguna" : "Edit Pengguna"}
+              </div>
+
+              <button
+                className="modal-close"
+                onClick={() => setShowModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="form-row">
+              <div className="form-field">
+                <label>Nama</label>
+                <input
+                  value={form.nama}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      nama: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="form-field">
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      email: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div className="form-field">
+                <label>Password</label>
+                <input
+                  type="password"
+                  placeholder={
+                    modalType === "edit"
+                      ? "Kosongkan jika tidak diubah"
+                      : "Password"
+                  }
+                  value={form.password}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      password: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="form-field">
+                <label>No HP</label>
+                <input
+                  value={form.telpon}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      telpon: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="form-field">
+              <label>Alamat</label>
+              <textarea
+                value={form.alamat}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    alamat: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="form-field">
+              <label>Role</label>
+              <select
+                value={form.role}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    role: e.target.value,
+                  })
+                }
+              >
+                <option value="pembeli">Pembeli</option>
+                <option value="admin">Admin</option>
+                <option value="mitra">Mitra</option>
+              </select>
+            </div>
+
+            <div className="modal-footer">
+              <button
+                className="btn btn-outline"
+                onClick={() => setShowModal(false)}
+              >
+                Batal
+              </button>
+
+              <button
+                className="btn btn-primary"
+                onClick={modalType === "create" ? createUser : updateUser}
+              >
+                💾 Simpan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showModal && modalType === "detail" && selected && (
         <div
           className="modal-overlay show"
           onClick={(e) => {
@@ -329,7 +554,9 @@ function AdminClients() {
                     {selected.email}
                   </div>
                   <div style={{ marginTop: ".3rem" }}>
-                    <span className={`badge ${roleBadgeMap[selected.role] || 'badge-blue'}`}>
+                    <span
+                      className={`badge ${roleBadgeMap[selected.role] || "badge-blue"}`}
+                    >
                       {selected.role}
                     </span>
                   </div>
@@ -359,7 +586,7 @@ function AdminClients() {
                     No HP
                   </div>
                   <div style={{ fontWeight: 600, fontSize: ".88rem" }}>
-                    {selected.telpon || '-'}
+                    {selected.telpon || "-"}
                   </div>
                 </div>
                 <div
@@ -379,18 +606,30 @@ function AdminClients() {
                     Bergabung
                   </div>
                   <div style={{ fontWeight: 600, fontSize: ".88rem" }}>
-                    {new Date(selected.createdAt).toLocaleDateString('id-ID')}
+                    {new Date(selected.createdAt).toLocaleDateString("id-ID")}
                   </div>
                 </div>
               </div>
-              <div style={{
-                padding: ".85rem",
-                background: "var(--cream)",
-                borderRadius: "10px",
-                marginTop: ".85rem"
-              }}>
-                <div style={{ fontSize: ".72rem", color: "var(--muted)", marginBottom: ".25rem" }}>Alamat</div>
-                <div style={{ fontWeight: 600, fontSize: ".88rem" }}>{selected.alamat || '-'}</div>
+              <div
+                style={{
+                  padding: ".85rem",
+                  background: "var(--cream)",
+                  borderRadius: "10px",
+                  marginTop: ".85rem",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: ".72rem",
+                    color: "var(--muted)",
+                    marginBottom: ".25rem",
+                  }}
+                >
+                  Alamat
+                </div>
+                <div style={{ fontWeight: 600, fontSize: ".88rem" }}>
+                  {selected.alamat || "-"}
+                </div>
               </div>
             </div>
             <div className="modal-footer">

@@ -31,6 +31,12 @@ function SidebarAdmin() {
           <span className="nav-icon">📊</span> Dashboard
         </Link>
         <Link
+          to="/admin/kategori"
+          className={`nav-item ${isActive("/admin/kategori") ? "active" : ""}`}
+        >
+          <span className="nav-icon">📂</span> Kategori
+        </Link>
+        <Link
           to="/admin/products"
           className={`nav-item ${isActive("/admin/products") ? "active" : ""}`}
         >

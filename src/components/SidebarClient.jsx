@@ -64,12 +64,6 @@ function SidebarClient() {
         >
           <span className="nav-icon">📦</span> Riwayat Pesanan
         </Link>
-        <Link
-          to="/client/tracking"
-          className={`nav-item ${isActive("/client/tracking") ? "active" : ""}`}
-        >
-          <span className="nav-icon">🚚</span> Lacak Pengiriman
-        </Link>
         <div className="sidebar-divider"></div>
         <Link
           to="/client/profile"

@@ -21,12 +21,16 @@ function ClientOrder() {
     try {
       const [prodRes, catRes] = await Promise.all([
         api.get("/products"),
-        api.get("/categories")
+        api.get("/categories"),
       ]);
-      const prodData = Array.isArray(prodRes.data) ? prodRes.data : (prodRes.data.data || []);
-      const catData = Array.isArray(catRes.data) ? catRes.data : (catRes.data.data || []);
+      const prodData = Array.isArray(prodRes.data)
+        ? prodRes.data
+        : prodRes.data.data || [];
+      const catData = Array.isArray(catRes.data)
+        ? catRes.data
+        : catRes.data.data || [];
       setProducts(prodData);
-      setCategories([{ id: 'all', nama: 'Semua' }, ...catData]);
+      setCategories([{ id: "all", nama: "Semua" }, ...catData]);
     } catch (err) {
       console.error("Error fetching data:", err);
     }
@@ -47,7 +51,13 @@ function ClientOrder() {
     let newCart = [...cart];
     const index = newCart.findIndex((i) => i.id === product.id);
     if (index === -1 && delta > 0) {
-      newCart.push({ id: product.id, name: product.nama, harga: product.harga, foto: product.foto, qty: delta });
+      newCart.push({
+        id: product.id_produk,
+        name: product.nama,
+        harga: product.harga,
+        foto: product.foto,
+        qty: delta,
+      });
     } else if (index !== -1) {
       newCart[index].qty += delta;
       if (newCart[index].qty <= 0) {
@@ -58,7 +68,8 @@ function ClientOrder() {
   };
 
   const filtered = products.filter((p) => {
-    const matchesKat = currentKat === "Semua" || p.Kategori?.nama === currentKat;
+    const matchesKat =
+      currentKat === "Semua" || p.Kategori?.nama === currentKat;
     const matchesSearch = p.nama.toLowerCase().includes(search.toLowerCase());
     return matchesKat && matchesSearch;
   });
@@ -139,13 +150,26 @@ function ClientOrder() {
           >
             {filtered.map((p) => {
               const qty = getQty(p.id);
-              const imageUrl = p.foto ? `${import.meta.env.VITE_API_URL || 'http://localhost:5500/api'}/products/images/${p.foto}` : null;
-              
+              const imageUrl = p.foto
+                ? `${import.meta.env.VITE_API_URL || "http://localhost:5500/api"}/products/images/${p.foto}`
+                : null;
+
               return (
                 <div key={p.id} className="prod-card">
-                  <div className="prod-thumb" style={{ background: '#FFF8E8', overflow: 'hidden' }}>
+                  <div
+                    className="prod-thumb"
+                    style={{ background: "#FFF8E8", overflow: "hidden" }}
+                  >
                     {imageUrl ? (
-                      <img src={imageUrl} alt={p.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img
+                        src={imageUrl}
+                        alt={p.nama}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
                     ) : (
                       "🌾"
                     )}
@@ -155,7 +179,9 @@ function ClientOrder() {
                     <div className="prod-name">{p.nama}</div>
                     <div className="prod-footer">
                       <div>
-                        <div className="prod-price">{formatRupiah(p.harga)}</div>
+                        <div className="prod-price">
+                          {formatRupiah(p.harga)}
+                        </div>
                         <div className="prod-unit">Stok: {p.stok}</div>
                       </div>
                       {qty === 0 ? (

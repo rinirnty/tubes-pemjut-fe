@@ -1,57 +1,63 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import api from "../../utils/api";
 import { Link } from "react-router-dom";
 import SidebarClient from "../../components/SidebarClient";
 
 function ClientDashboard() {
   const revealRefs = useRef([]);
 
-  const favs = [
-    { emoji: "🍚", name: "Beras Pandan Wangi", harga: "Rp 65.000/5kg" },
-    { emoji: "🌾", name: "Beras Ketan Putih", harga: "Rp 28.000/kg" },
-    { emoji: "🍠", name: "Ubi Jalar Merah", harga: "Rp 8.000/kg" },
-  ];
+  const [user, setUser] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [recs, setRecs] = useState([]);
+  const [stats, setStats] = useState({
+    totalPesanan: 0,
+    selesai: 0,
+    dikirim: 0,
+    totalBelanja: 0,
+  });
 
-  const activeOrders = [
-    {
-      inv: "#INV-0283",
-      prod: "Ubi Jalar Merah 10kg",
-      status: "dikirim",
-      tgl: "19 Mei",
-    },
-    {
-      inv: "#INV-0282",
-      prod: "Beras Ketan Putih 3kg",
-      status: "diproses",
-      tgl: "18 Mei",
-    },
-  ];
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
 
-  const recs = [
-    {
-      emoji: "🍚",
-      name: "Beras IR 64",
-      cat: "Beras Putih",
-      harga: "Rp 55.000",
-      unit: "/5kg",
-      bg: "#FFF8E8",
-    },
-    {
-      emoji: "🟤",
-      name: "Singkong Segar",
-      cat: "Ubi Kayu",
-      harga: "Rp 5.000",
-      unit: "/kg",
-      bg: "#F5EDE0",
-    },
-    {
-      emoji: "🌿",
-      name: "Beras Merah Organik",
-      cat: "Beras Merah",
-      harga: "Rp 22.000",
-      unit: "/kg",
-      bg: "#F0F5E8",
-    },
-  ];
+  const fetchDashboard = async () => {
+    try {
+      const userRes = await api.get("/auth/me");
+      const currentUser = userRes.data.data;
+
+      setUser(currentUser);
+
+      const productRes = await api.get("/products");
+
+      setRecs(productRes.data.data.slice(0, 6));
+
+      const orderRes = await api.get(`/orders/${currentUser.id_user}`);
+
+      const orderData = orderRes.data;
+
+      setOrders(orderData);
+
+      const totalPesanan = orderData.length;
+
+      const selesai = orderData.filter((o) => o.status === "selesai").length;
+
+      const dikirim = orderData.filter((o) => o.status === "dikirim").length;
+
+      const totalBelanja = orderData.reduce(
+        (sum, o) => sum + Number(o.total_harga || 0),
+        0,
+      );
+
+      setStats({
+        totalPesanan,
+        selesai,
+        dikirim,
+        totalBelanja,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const addToCart = (name) => {
     let cart = JSON.parse(localStorage.getItem("panenku_cart") || "[]");
@@ -90,7 +96,7 @@ function ClientDashboard() {
         <div className="topbar">
           <div>
             <div className="page-title">Dashboard</div>
-            <div className="breadcrumb">Halo, Ibu Ratna 👋</div>
+            <div className="breadcrumb">Halo, {user?.nama} 👋</div>
           </div>
           <div className="topbar-right">
             <Link to="/client/cart" className="topbar-btn" title="Keranjang">
@@ -111,9 +117,9 @@ function ClientDashboard() {
                 📦
               </div>
               <div>
-                <div className="stat-value">24</div>
+                <div className="stat-value">{stats.totalPesanan}</div>
                 <div className="stat-label">Total Pesanan</div>
-                <div className="stat-change up">▲ 3 bulan ini</div>
+                {/* <div className="stat-change up">▲ 3 bulan ini</div> */}
               </div>
             </div>
             <div className="stat-card">
@@ -121,7 +127,7 @@ function ClientDashboard() {
                 ✅
               </div>
               <div>
-                <div className="stat-value">21</div>
+                <div className="stat-value">{stats.selesai}</div>
                 <div className="stat-label">Pesanan Selesai</div>
               </div>
             </div>
@@ -130,7 +136,7 @@ function ClientDashboard() {
                 🚚
               </div>
               <div>
-                <div className="stat-value">2</div>
+                <div className="stat-value">{stats.dikirim}</div>
                 <div className="stat-label">Sedang Dikirim</div>
               </div>
             </div>
@@ -139,126 +145,15 @@ function ClientDashboard() {
                 💰
               </div>
               <div>
-                <div className="stat-value">Rp 1,2jt</div>
+                <div className="stat-value">
+                  Rp {stats.totalBelanja.toLocaleString("id-ID")}
+                </div>
                 <div className="stat-label">Total Belanja</div>
               </div>
             </div>
           </div>
 
-          <div
-            className="grid-2 reveal"
-            ref={(el) => (revealRefs.current[1] = el)}
-            style={{ marginBottom: "1.25rem" }}
-          >
-            <div className="card">
-              <div className="section-title">⚡ Pesan Cepat (Favorit)</div>
-              {favs.map((f, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: ".75rem 0",
-                    borderBottom: "1px solid var(--border)",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: ".75rem",
-                    }}
-                  >
-                    <span style={{ fontSize: "1.6rem" }}>{f.emoji}</span>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: ".88rem" }}>
-                        {f.name}
-                      </div>
-                      <div
-                        style={{ fontSize: ".75rem", color: "var(--muted)" }}
-                      >
-                        {f.harga}
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    className="btn btn-primary btn-sm"
-                    onClick={() => addToCart(f.name)}
-                  >
-                    + Keranjang
-                  </button>
-                </div>
-              ))}
-              <Link
-                to="/client/order"
-                className="btn btn-outline btn-block"
-                style={{ marginTop: "1rem" }}
-              >
-                🌾 Lihat Semua Produk
-              </Link>
-            </div>
-
-            <div className="card">
-              <div className="section-title">📦 Pesanan Aktif</div>
-              {activeOrders.map((o, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: ".75rem 0",
-                    borderBottom: "1px solid var(--border)",
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: ".82rem", fontWeight: 600 }}>
-                      {o.inv}
-                    </div>
-                    <div style={{ fontSize: ".78rem", color: "var(--muted)" }}>
-                      {o.prod}
-                    </div>
-                    <div style={{ fontSize: ".72rem", color: "var(--muted)" }}>
-                      {o.tgl}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-end",
-                      gap: ".35rem",
-                    }}
-                  >
-                    <span
-                      className={`badge ${o.status === "dikirim" ? "badge-blue" : "badge-gold"}`}
-                    >
-                      {o.status}
-                    </span>
-                    <Link
-                      to="/client/tracking"
-                      className="btn btn-outline btn-sm"
-                    >
-                      Lacak
-                    </Link>
-                  </div>
-                </div>
-              ))}
-              <Link
-                to="/client/history"
-                className="btn btn-outline btn-block"
-                style={{ marginTop: "1rem" }}
-              >
-                Lihat Semua Riwayat
-              </Link>
-            </div>
-          </div>
-
-          <div
-            className="card reveal"
-            ref={(el) => (revealRefs.current[2] = el)}
-          >
+          <div className="card" ref={(el) => (revealRefs.current[2] = el)}>
             <div className="section-title">🌾 Produk yang Sering Dipesan</div>
             <div
               style={{
@@ -268,82 +163,109 @@ function ClientDashboard() {
                 marginTop: ".5rem",
               }}
             >
-              {recs.map((r, i) => (
-                <div
-                  key={i}
-                  style={{
-                    background: r.bg,
-                    borderRadius: "14px",
-                    overflow: "hidden",
-                    border: "1px solid var(--border)",
-                  }}
-                >
+              {recs.map((r, i) => {
+                const imageUrl = r.foto
+                  ? `http://localhost:5500/api/products/images/${r.foto}`
+                  : null;
+                return (
                   <div
+                    key={i}
                     style={{
-                      height: "100px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "3.5rem",
+                      background: r.bg,
+                      borderRadius: "14px",
+                      overflow: "hidden",
+                      border: "1px solid var(--border)",
                     }}
                   >
-                    {r.emoji}
-                  </div>
-                  <div style={{ padding: ".85rem" }}>
                     <div
                       style={{
-                        fontSize: ".7rem",
-                        color: "var(--green2)",
-                        fontWeight: 700,
-                        textTransform: "uppercase",
-                        letterSpacing: ".06em",
-                      }}
-                    >
-                      {r.cat}
-                    </div>
-                    <div
-                      style={{
-                        fontWeight: 600,
-                        fontSize: ".88rem",
-                        margin: ".2rem 0",
-                      }}
-                    >
-                      {r.name}
-                    </div>
-                    <div
-                      style={{
+                        height: "100px",
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "space-between",
-                        marginTop: ".6rem",
+                        justifyContent: "center",
+                        fontSize: "3.5rem",
                       }}
                     >
-                      <div>
-                        <span
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={r.nama}
                           style={{
-                            fontFamily: "Playfair Display, serif",
-                            fontWeight: 700,
-                            color: "var(--brown)",
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "3rem",
                           }}
                         >
-                          {r.harga}
-                        </span>
-                        <span
-                          style={{ fontSize: ".7rem", color: "var(--muted)" }}
-                        >
-                          {r.unit}
-                        </span>
-                      </div>
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() => addToCart(r.name)}
+                          🌾
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ padding: ".85rem" }}>
+                      <div
+                        style={{
+                          fontSize: ".7rem",
+                          color: "var(--green2)",
+                          fontWeight: 700,
+                          textTransform: "uppercase",
+                          letterSpacing: ".06em",
+                        }}
                       >
-                        +
-                      </button>
+                        {r.kategori.nama}
+                      </div>
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          fontSize: ".88rem",
+                          margin: ".2rem 0",
+                        }}
+                      >
+                        {r.nama}
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          marginTop: ".6rem",
+                        }}
+                      >
+                        <div>
+                          <span
+                            style={{
+                              fontFamily: "Playfair Display, serif",
+                              fontWeight: 700,
+                              color: "var(--brown)",
+                            }}
+                          >
+                            {r.harga}
+                          </span>
+                          <span
+                            style={{ fontSize: ".7rem", color: "var(--muted)" }}
+                          >
+                            {r.unit}
+                          </span>
+                        </div>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => addToCart(r.nama)}
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
