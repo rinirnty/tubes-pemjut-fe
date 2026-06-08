@@ -26,7 +26,7 @@ function AdminOrders() {
     try {
       setLoading(true);
       const orderRes = await api.get(`/orders`);
-      console.log(orderRes.data);
+      // console.log(orderRes.data);
 
       setOrders(orderRes.data);
     } catch (error) {
@@ -216,7 +216,7 @@ function AdminOrders() {
                   <th>Pembeli</th>
                   <th>Total</th>
                   <th>Status</th>
-                  <th>Tgl</th>
+                  {/* <th>Tgl</th> */}
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -247,9 +247,9 @@ function AdminOrders() {
                         </span>
                       </td>
 
-                      <td>
+                      {/* <td>
                         {new Date(o.createdAt).toLocaleDateString("id-ID")}
-                      </td>
+                      </td> */}
 
                       <td style={{ display: "flex", gap: ".5rem" }}>
                         <button

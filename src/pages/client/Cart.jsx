@@ -13,7 +13,7 @@ function ClientCart() {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    console.log(JSON.parse(localStorage.getItem("panenku_cart")));
+    // console.log(JSON.parse(localStorage.getItem("panenku_cart")));
     api
       .get("/auth/me")
       .then((res) => setProfile(res.data))
@@ -51,7 +51,7 @@ function ClientCart() {
     (sum, item) => sum + (item.harga || 0) * item.qty,
     0,
   );
-  const ongkir = 15000;
+  const ongkir = 0;
   const finalTotal = total + ongkir;
 
   const formatRupiah = (n) => "Rp " + Number(n).toLocaleString("id-ID");
@@ -108,8 +108,8 @@ function ClientCart() {
     return `${m}:${s}`;
   };
 
-  console.log("STATE CART:", cart);
-  console.log("LENGTH:", cart.length);
+  // console.log("STATE CART:", cart);
+  // console.log("LENGTH:", cart.length);
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", overflow: "hidden" }}>

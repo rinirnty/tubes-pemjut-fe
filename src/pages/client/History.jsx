@@ -7,13 +7,13 @@ const sbadge = {
   selesai: "badge-green",
   dikirim: "badge-blue",
   diproses: "badge-gold",
-  pending: "badge-gray",
+  dibayar: "badge-gray",
   dibatalkan: "badge-red",
 };
 const pbadge = { lunas: "badge-green", "belum bayar": "badge-red" };
 const statuses = [
   "Semua",
-  "pending",
+  "dibayar",
   "diproses",
   "dikirim",
   "selesai",
@@ -126,6 +126,18 @@ function ClientHistory() {
     }
   };
 
+  const updateStatus = async (newStatus, id_order) => {
+    try {
+      await api.patch(`/orders/${id_order}/update`, {
+        status: newStatus,
+      });
+      fetchOrders();
+      setShowDetail(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div style={{ minHeight: "100vh", display: "flex", overflow: "hidden" }}>
       <SidebarClient />
@@ -182,7 +194,7 @@ function ClientHistory() {
                   <th>Invoice</th>
                   <th>Total</th>
                   <th>Status</th>
-                  <th>Tanggal</th>
+                  {/* <th>Tanggal</th> */}
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -207,14 +219,14 @@ function ClientHistory() {
                       <span
                         className={`badge ${sbadge[o.status] || "badge-gray"}`}
                       >
-                        {o.status || "pending"}
+                        {o.status || "dibayar"}
                       </span>
                     </td>
-                    <td style={{ fontSize: ".78rem", color: "var(--muted)" }}>
+                    {/* <td style={{ fontSize: ".78rem", color: "var(--muted)" }}>
                       {new Date(o.createdAt || o.tanggal).toLocaleDateString(
                         "id-ID",
                       )}
-                    </td>
+                    </td> */}
                     <td>
                       <div style={{ display: "flex", gap: ".35rem" }}>
                         <button
@@ -224,23 +236,11 @@ function ClientHistory() {
                           Detail
                         </button>
                         {o.status === "dikirim" && (
-                          <Link
-                            to="/client/tracking"
-                            className="btn btn-blue btn-sm"
-                            style={{
-                              background: "var(--blue2)",
-                              color: "var(--blue)",
-                            }}
-                          >
-                            🚚 Lacak
-                          </Link>
-                        )}
-                        {o.status === "selesai" && (
                           <button
-                            className="btn btn-primary btn-sm"
-                            onClick={reorder}
+                            className="btn btn-outline btn-sm"
+                            onClick={() => updateStatus("selesai", o.id_order)}
                           >
-                            🔄 Ulang
+                            Selesai
                           </button>
                         )}
                       </div>
@@ -302,7 +302,7 @@ function ClientHistory() {
                 ) : (
                   (orderDetail.order_items || []).map((item, i) => {
                     {
-                      console.log(item);
+                      // console.log(item);
                     }
                     const prodName =
                       item.produk?.nama || `Produk ID ${item.id_produk}`;
@@ -391,7 +391,7 @@ function ClientHistory() {
                   <span
                     className={`badge ${sbadge[selectedOrder.status] || "badge-gray"}`}
                   >
-                    {selectedOrder.status || "pending"}
+                    {selectedOrder.status || "dibayar"}
                   </span>
                 </div>
               </div>

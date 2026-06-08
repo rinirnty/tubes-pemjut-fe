@@ -16,20 +16,23 @@ function AdminDashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [me, setMe] = useState(null);
   const revealRefs = useRef([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [usersRes, productsRes, ordersRes] = await Promise.all([
+        const [usersRes, productsRes, ordersRes, meRes] = await Promise.all([
           api.get("/users"),
           api.get("/products"),
           api.get("/orders"),
+          api.get("/auth/me"),
         ]);
 
         setUsers(usersRes.data.data || []);
         setProducts(productsRes.data.data || []);
         setOrders(ordersRes.data || []);
+        setMe(meRes.data.data || null);
       } catch (err) {
         console.error(err);
       } finally {
@@ -80,7 +83,9 @@ function AdminDashboard() {
         <div className="topbar">
           <div>
             <div className="page-title">Dashboard</div>
-            <div className="breadcrumb">Selamat datang kembali, Admin 👋</div>
+            <div className="breadcrumb">
+              Selamat datang kembali, {me?.nama} 👋
+            </div>
           </div>
           <div className="topbar-right">
             <div className="topbar-btn" title="Notifikasi">
