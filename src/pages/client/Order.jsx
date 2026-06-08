@@ -175,7 +175,7 @@ function ClientOrder() {
                     )}
                   </div>
                   <div className="prod-body">
-                    <div className="prod-cat">{p.Kategori?.nama}</div>
+                    <div className="prod-cat">{p.kategori?.nama}</div>
                     <div className="prod-name">{p.nama}</div>
                     <div className="prod-footer">
                       <div>

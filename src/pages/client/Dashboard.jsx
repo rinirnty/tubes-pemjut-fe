@@ -178,12 +178,11 @@ function ClientDashboard() {
                     }}
                   >
                     <div
+                      className="prod-thumb"
                       style={{
-                        height: "100px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "3.5rem",
+                        background: "#FFF8E8",
+                        overflow: "hidden",
+                        height: "140px",
                       }}
                     >
                       {imageUrl ? (
@@ -220,7 +219,7 @@ function ClientDashboard() {
                           letterSpacing: ".06em",
                         }}
                       >
-                        {r.kategori.nama}
+                        {r.kategori?.nama}
                       </div>
                       <div
                         style={{
