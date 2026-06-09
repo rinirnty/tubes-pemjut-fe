@@ -88,9 +88,6 @@ function AdminDashboard() {
             </div>
           </div>
           <div className="topbar-right">
-            <div className="topbar-btn" title="Notifikasi">
-              🔔<div className="notif-dot"></div>
-            </div>
             <div className="topbar-btn" title="Profil">
               👨‍💼
             </div>

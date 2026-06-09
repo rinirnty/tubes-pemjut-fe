@@ -189,9 +189,6 @@ function AdminProducts() {
             >
               + Tambah Produk
             </button>
-            <div className="topbar-btn">
-              🔔<div className="notif-dot"></div>
-            </div>
           </div>
         </div>
 

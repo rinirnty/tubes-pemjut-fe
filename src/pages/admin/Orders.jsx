@@ -142,9 +142,6 @@ function AdminOrders() {
             <button className="btn btn-outline btn-sm" onClick={exportCSV}>
               📥 Export CSV
             </button>
-            <div className="topbar-btn">
-              🔔<div className="notif-dot"></div>
-            </div>
           </div>
         </div>
 

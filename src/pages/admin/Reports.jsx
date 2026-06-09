@@ -230,9 +230,6 @@ function AdminReports() {
               ))}
             </div>
             <button className="btn btn-outline btn-sm">📥 Export PDF</button>
-            <div className="topbar-btn">
-              🔔<div className="notif-dot"></div>
-            </div>
           </div>
         </div>
 

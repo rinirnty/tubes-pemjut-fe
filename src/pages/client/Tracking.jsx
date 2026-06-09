@@ -88,9 +88,6 @@ function ClientTracking() {
             <Link to="/client/cart" className="topbar-btn" title="Keranjang">
               🛒<div className="notif-dot"></div>
             </Link>
-            <div className="topbar-btn" title="Notifikasi">
-              🔔
-            </div>
           </div>
         </div>
         <div className="page-content">
