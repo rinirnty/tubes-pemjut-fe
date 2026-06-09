@@ -165,7 +165,7 @@ function ClientDashboard() {
             >
               {recs.map((r, i) => {
                 const imageUrl = r.foto
-                  ? `http://localhost:5500/api/products/images/${r.foto}`
+                  ? `${import.meta.env.VITE_API_URL || "http://localhost:5500/api"}/products/images/${r.foto}`
                   : null;
                 return (
                   <div

@@ -69,7 +69,7 @@ function ClientOrder() {
 
   const filtered = products.filter((p) => {
     const matchesKat =
-      currentKat === "Semua" || p.Kategori?.nama === currentKat;
+      currentKat === "Semua" || p.kategori?.nama === currentKat;
     const matchesSearch = p.nama.toLowerCase().includes(search.toLowerCase());
     return matchesKat && matchesSearch;
   });

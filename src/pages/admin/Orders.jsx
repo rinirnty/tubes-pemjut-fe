@@ -39,9 +39,11 @@ function AdminOrders() {
   const filtered = orders.filter((o) => {
     const matchesStatus = filterStatus === "semua" || o.status === filterStatus;
 
-    const matchesSearch = String(o.id_order)
-      .toLowerCase()
-      .includes(search.toLowerCase());
+    const keyword = search.toLowerCase();
+
+    const matchesSearch =
+      String(o.id_order).toLowerCase().includes(keyword) ||
+      (o.user?.nama || "").toLowerCase().includes(keyword);
 
     return matchesStatus && matchesSearch;
   });

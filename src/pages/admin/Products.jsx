@@ -17,7 +17,7 @@ function AdminProducts() {
     id_kategori: 0,
     price: "",
     stock: "",
-    foto: null
+    foto: null,
   });
   const revealRefs = useRef([]);
 
@@ -29,10 +29,14 @@ function AdminProducts() {
     try {
       const [prodRes, catRes] = await Promise.all([
         api.get("/products"),
-        api.get("/categories")
+        api.get("/categories"),
       ]);
-      const prodData = Array.isArray(prodRes.data) ? prodRes.data : (prodRes.data.data || []);
-      const catData = Array.isArray(catRes.data) ? catRes.data : (catRes.data.data || []);
+      const prodData = Array.isArray(prodRes.data)
+        ? prodRes.data
+        : prodRes.data.data || [];
+      const catData = Array.isArray(catRes.data)
+        ? catRes.data
+        : catRes.data.data || [];
       setProducts(prodData);
       setCategories(catData);
     } catch (err) {
@@ -41,21 +45,25 @@ function AdminProducts() {
   };
 
   const filtered = products.filter((p) => {
-    const matchesKat = currentKat === "semua" || p.Kategori?.nama === currentKat;
+    const matchesKat =
+      currentKat === "semua" || p.kategori?.nama === currentKat;
     const matchesSearch = p.nama.toLowerCase().includes(search.toLowerCase());
     return matchesKat && matchesSearch;
   });
 
   const openEdit = (p) => {
     setModalType("edit");
+
     setEditingId(p.id_produk);
+
     setForm({
-      name: p.nama,
-      id_kategori: p.id_kategori || (categories[0]?.id_kategori || ""),
-      price: p.harga,
-      stock: p.stok,
-      foto: null
+      name: p.nama || "",
+      id_kategori: String(p.id_kategori || p.kategori?.id_kategori || ""),
+      price: p.harga || "",
+      stock: p.stok || "",
+      foto: null,
     });
+
     setShowModal(true);
   };
 
@@ -65,31 +73,57 @@ function AdminProducts() {
 
   const saveProduct = async () => {
     try {
+      if (!form.id_kategori) {
+        return alert("Kategori wajib dipilih");
+      }
+
       const formData = new FormData();
+
       formData.append("nama", form.name);
-      formData.append("id_kategori", form.id_kategori);
       formData.append("harga", form.price);
       formData.append("stok", form.stock);
-      if (form.foto) {
+
+      // pastikan selalu ID kategori
+      formData.append("id_kategori", String(form.id_kategori));
+
+      // foto tetap opsional
+      if (form.foto instanceof File) {
         formData.append("foto", form.foto);
       }
 
-
       if (modalType === "tambah") {
         await api.post("/products", formData, {
-          headers: { "Content-Type": "multipart/form-data" }
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         });
+
         alert("Produk berhasil ditambahkan!");
       } else {
         await api.patch(`/products/${editingId}`, formData, {
-          headers: { "Content-Type": "multipart/form-data" }
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         });
-        alert("Produk berhasil diupdate!");
+
+        alert("Produk berhasil diperbarui!");
       }
+
       setShowModal(false);
+
+      setForm({
+        name: "",
+        id_kategori: "",
+        price: "",
+        stock: "",
+        foto: null,
+      });
+
       fetchData();
     } catch (err) {
-      alert("Gagal menyimpan produk: " + (err.response?.data?.message || err.message));
+      console.error(err);
+
+      alert(err.response?.data?.message || "Gagal menyimpan produk");
     }
   };
 
@@ -129,7 +163,6 @@ function AdminProducts() {
   }, [filtered]);
 
   return (
-
     <div style={{ minHeight: "100vh", display: "flex", overflow: "hidden" }}>
       <SidebarAdmin />
       <div className="main">
@@ -149,7 +182,7 @@ function AdminProducts() {
                   id_kategori: categories[0]?.id_kategori || "",
                   price: "",
                   stock: "",
-                  foto: null
+                  foto: null,
                 });
                 setShowModal(true);
               }}
@@ -183,9 +216,7 @@ function AdminProducts() {
               </div>
               <div>
                 <div className="stat-value">
-                  {
-                    products.filter((p) => p.stok > 0).length
-                  }
+                  {products.filter((p) => p.stok > 0).length}
                 </div>
                 <div className="stat-label">Aktif</div>
               </div>
@@ -275,19 +306,36 @@ function AdminProducts() {
               ref={(el) => (revealRefs.current[2] = el)}
             >
               {filtered.map((p) => {
-                const imageUrl = p.foto ? `${import.meta.env.VITE_API_URL || 'http://localhost:5500/api'}/products/images/${p.foto}` : null;
+                const imageUrl = p.foto
+                  ? `${import.meta.env.VITE_API_URL || "http://localhost:5500/api"}/products/images/${p.foto}`
+                  : null;
                 return (
                   <div key={p.id} className="prod-card">
-                    <div className="prod-thumb" style={{ background: '#FFF8E8', overflow: 'hidden' }}>
+                    <div
+                      className="prod-thumb"
+                      style={{ background: "#FFF8E8", overflow: "hidden" }}
+                    >
                       {imageUrl ? (
-                        <img src={imageUrl} alt={p.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img
+                          src={imageUrl}
+                          alt={p.nama}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
+                        />
                       ) : (
                         "🌾"
                       )}
                       <span
                         className={`prod-stock-badge ${getStatusBadgeClass(p.stok)}`}
                       >
-                        {p.stok > 20 ? "aktif" : p.stok > 0 ? "stok menipis" : "kosong"}
+                        {p.stok > 20
+                          ? "aktif"
+                          : p.stok > 0
+                            ? "stok menipis"
+                            : "kosong"}
                       </span>
                     </div>
                     <div className="prod-body">
@@ -295,7 +343,9 @@ function AdminProducts() {
                       <div className="prod-name">{p.nama}</div>
                       <div className="prod-footer">
                         <div>
-                          <div className="prod-price">{formatRupiah(p.harga)}</div>
+                          <div className="prod-price">
+                            {formatRupiah(p.harga)}
+                          </div>
                           <div className="prod-unit">Stok: {p.stok}</div>
                         </div>
                         <div className="prod-actions">
@@ -317,7 +367,7 @@ function AdminProducts() {
                       </div>
                     </div>
                   </div>
-                )
+                );
               })}
             </div>
           ) : (
@@ -363,7 +413,11 @@ function AdminProducts() {
                         <span
                           className={`badge ${getStatusBadgeClass(p.stok)}`}
                         >
-                          {p.stok > 20 ? "aktif" : p.stok > 0 ? "stok menipis" : "kosong"}
+                          {p.stok > 20
+                            ? "aktif"
+                            : p.stok > 0
+                              ? "stok menipis"
+                              : "kosong"}
                         </span>
                       </td>
                       <td>
@@ -436,10 +490,22 @@ function AdminProducts() {
                 <label>Kategori</label>
                 <select
                   value={form.id_kategori}
-                  onChange={(e) => setForm({ ...form, id_kategori: e.target.value })}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      id_kategori: String(e.target.value),
+                    })
+                  }
                 >
-                  {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.nama}</option>
+                  <option value="">Pilih Kategori</option>
+
+                  {categories.map((c) => (
+                    <option
+                      key={c.id_kategori || c.id}
+                      value={c.id_kategori || c.id}
+                    >
+                      {c.nama}
+                    </option>
                   ))}
                 </select>
               </div>
