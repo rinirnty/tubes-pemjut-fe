@@ -44,7 +44,7 @@ function AdminDashboard() {
   }, []);
 
   const totalPendapatan = orders
-    .filter((o) => o.status === "dibayar")
+    .filter((o) => o.status === "selesai")
     .reduce((sum, o) => sum + Number(o.total_harga || 0), 0);
 
   const totalPesanan = orders.length;
