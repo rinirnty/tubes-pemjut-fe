@@ -666,11 +666,10 @@ const Home = () => {
       <section className="roles" id="peran">
         <div className="section-label">Bergabung</div>
         <h2>
-          Satu Platform, <em>Dua Peran</em>
+          Belanja Produk Pokok Jadi Lebih Mudah, <em>Mari Berbelanja</em>
         </h2>
         <p className="section-desc">
-          Dua peran yang dirancang dengan fitur dan akses berbeda sesuai
-          kebutuhan.
+          Temukan beras, ketan, dan ubi dari mitra terpercaya dengan harga transparan.
         </p>
         <div className="roles-grid">
           <div ref={addRevealRef} className="role-card pembeli reveal">

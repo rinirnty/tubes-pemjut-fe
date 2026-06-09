@@ -82,7 +82,6 @@ function SidebarAdmin() {
       </nav>
       <div className="sidebar-footer">
         <div className="admin-profile">
-          <div className="admin-avatar">👨‍💼</div>
           <div>
             <div className="admin-name">{user?.nama}</div>
             <div className="admin-email">{user?.email}</div>

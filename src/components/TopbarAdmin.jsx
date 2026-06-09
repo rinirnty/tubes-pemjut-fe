@@ -74,7 +74,6 @@ function TopbarAdmin() {
             justifyContent: "center",
             fontSize: "1rem"
           }}>
-            👨‍💼
           </div>
           <div style={{ color: "#fff" }}>
             <div style={{ fontSize: ".82rem", fontWeight: 600 }}>Admin PanenKu</div>
