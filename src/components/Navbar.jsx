@@ -1,10 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../utils/api";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30);
@@ -13,7 +14,8 @@ const Navbar = () => {
     const token = localStorage.getItem("token");
 
     if (token) {
-      api.get("/auth/me")
+      api
+        .get("/auth/me")
         .then((res) => {
           setUser(res.data.data);
         })
@@ -26,6 +28,18 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleScrollTo = (id) => {
+    if (window.location.pathname !== "/") {
+      navigate("/", { state: { scrollTo: id } });
+      return;
+    }
+
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <nav id="navbar" className={scrolled ? "scrolled" : ""}>
       <Link to="/" className="logo">
@@ -33,11 +47,23 @@ const Navbar = () => {
       </Link>
 
       <ul className="nav-links">
-        <li><a href="#produk">Produk</a></li>
-        <li><Link to="/catalog">Katalog</Link></li>
-        <li><a href="#cara-kerja">Cara Kerja</a></li>
-        <li><Link to="/about">Tentang</Link></li>
-        <li><Link to="/contact">Kontak</Link></li>
+        <li>
+          <button onClick={() => handleScrollTo("produk")}>Produk</button>
+        </li>
+        <li>
+          <Link to="/catalog">Katalog</Link>
+        </li>
+        <li>
+          <button onClick={() => handleScrollTo("cara-kerja")}>
+            Cara Kerja
+          </button>
+        </li>
+        <li>
+          <Link to="/about">Tentang</Link>
+        </li>
+        <li>
+          <Link to="/contact">Kontak</Link>
+        </li>
       </ul>
 
       <div className="nav-cta">
@@ -47,9 +73,7 @@ const Navbar = () => {
 
             <Link
               to={
-                user.role === "admin"
-                  ? "/admin/dashboard"
-                  : "/client/dashboard"
+                user.role === "admin" ? "/admin/dashboard" : "/client/dashboard"
               }
               className="btn btn-primary"
             >

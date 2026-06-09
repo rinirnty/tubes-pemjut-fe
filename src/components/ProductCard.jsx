@@ -1,8 +1,20 @@
 const ProductCard = ({ product }) => {
   return (
     <div className="prod-card">
-      <div className="prod-thumb" style={{ background: product.bg || '#FFF8E8' }}>
-        {product.emoji}
+      <div
+        className="prod-thumb"
+        style={{ background: product.bg || "#FFF8E8" }}
+      >
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="product-image"
+          />
+        ) : (
+          <span>{product.emoji}</span>
+        )}
+
         {product.badge && (
           <span className={`prod-badge-abs badge-${product.badge}`}>
             {product.badge}

@@ -25,11 +25,15 @@ function Catalog() {
     try {
       const [prodRes, catRes] = await Promise.all([
         api.get("/products"),
-        api.get("/categories")
+        api.get("/categories"),
       ]);
 
-      const prodData = Array.isArray(prodRes.data) ? prodRes.data : (prodRes.data.data || []);
-      const catData = Array.isArray(catRes.data) ? catRes.data : (catRes.data.data || []);
+      const prodData = Array.isArray(prodRes.data)
+        ? prodRes.data
+        : prodRes.data.data || [];
+      const catData = Array.isArray(catRes.data)
+        ? catRes.data
+        : catRes.data.data || [];
 
       setProducts(prodData);
       setCategories(catData);
@@ -49,7 +53,7 @@ function Catalog() {
   const getFilteredProduk = () => {
     let filtered = products.filter(
       (p) =>
-        (currentKat === "semua" || p.Kategori?.nama === currentKat) &&
+        (currentKat === "semua" || p.kategori?.nama === currentKat) &&
         (p.nama?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.Kategori?.nama?.toLowerCase().includes(searchQuery.toLowerCase())),
     );
@@ -107,7 +111,13 @@ function Catalog() {
     if (idx !== -1) {
       cart[idx].qty += qty;
     } else {
-      cart.push({ id: selectedProduk.id, name: selectedProduk.nama, harga: selectedProduk.harga, foto: selectedProduk.foto, qty });
+      cart.push({
+        id: selectedProduk.id,
+        name: selectedProduk.nama,
+        harga: selectedProduk.harga,
+        foto: selectedProduk.foto,
+        qty,
+      });
     }
     localStorage.setItem("panenku_cart", JSON.stringify(cart));
     window.dispatchEvent(new CustomEvent("panenku-cart-updated"));
@@ -194,7 +204,7 @@ function Catalog() {
             />
             <button
               className="btn btn-gold btn-lg"
-              onClick={() => { }}
+              onClick={() => {}}
               style={{
                 background: "var(--gold)",
                 color: "#fff",
@@ -373,7 +383,9 @@ function Catalog() {
             }}
           >
             {filteredProduk.map((produk, idx) => {
-              const imageUrl = produk.foto ? `${import.meta.env.VITE_API_URL || 'http://localhost:5500/api'}/products/images/${produk.foto}` : null;
+              const imageUrl = produk.foto
+                ? `${import.meta.env.VITE_API_URL || "http://localhost:5500/api"}/products/images/${produk.foto}`
+                : null;
               return (
                 <div
                   key={produk.id}
@@ -398,12 +410,20 @@ function Catalog() {
                       justifyContent: "center",
                       fontSize: "5rem",
                       position: "relative",
-                      background: '#FFF8E8',
-                      overflow: 'hidden'
+                      background: "#FFF8E8",
+                      overflow: "hidden",
                     }}
                   >
                     {imageUrl ? (
-                      <img src={imageUrl} alt={produk.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img
+                        src={imageUrl}
+                        alt={produk.nama}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
                     ) : (
                       "🌾"
                     )}
@@ -456,7 +476,7 @@ function Catalog() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        marginTop: "1rem"
+                        marginTop: "1rem",
                       }}
                     >
                       <div>
@@ -508,7 +528,7 @@ function Catalog() {
                     </div>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         ) : (
@@ -614,7 +634,7 @@ function Catalog() {
                           color: "var(--muted)",
                           fontFamily: "'DM Sans', sans-serif",
                           fontWeight: 400,
-                          display: "block"
+                          display: "block",
                         }}
                       >
                         Stok: {produk.stok}
@@ -750,12 +770,16 @@ function Catalog() {
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: "7rem",
-                background: '#FFF8E8',
-                overflow: 'hidden'
+                background: "#FFF8E8",
+                overflow: "hidden",
               }}
             >
               {selectedProduk.foto ? (
-                <img src={`${import.meta.env.VITE_API_URL || 'http://localhost:5500/api'}/products/images/${selectedProduk.foto}`} alt={selectedProduk.nama} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img
+                  src={`${import.meta.env.VITE_API_URL || "http://localhost:5500/api"}/products/images/${selectedProduk.foto}`}
+                  alt={selectedProduk.nama}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
               ) : (
                 "🌾"
               )}
@@ -789,7 +813,7 @@ function Catalog() {
                   alignItems: "center",
                   justifyContent: "space-between",
                   marginBottom: ".5rem",
-                  marginTop: "1rem"
+                  marginTop: "1rem",
                 }}
               >
                 <div
