@@ -113,6 +113,51 @@ function AdminClients() {
     admin: "Admin",
   };
 
+  const exportCSV = () => {
+    const headers = [
+      "ID",
+      "Nama",
+      "Email",
+      "Role",
+      "No HP",
+      "Alamat",
+      // "Tanggal Bergabung",
+    ];
+
+    const rows = filtered.map((u) => [
+      u.id_user,
+      u.nama,
+      u.email,
+      u.role,
+      u.telpon || "",
+      u.alamat || "",
+      // new Date(u.createdAt).toLocaleDateString("id-ID"),
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row.map((field) => `"${String(field).replace(/"/g, '""')}"`).join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob(["\uFEFF" + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `pengguna-${new Date().toISOString().split("T")[0]}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     const obs = new IntersectionObserver(
       (entries) => {
@@ -159,7 +204,9 @@ function AdminClients() {
               + Tambah Pengguna
             </button>
 
-            <button className="btn btn-outline btn-sm">📥 Export</button>
+            <button className="btn btn-outline btn-sm" onClick={exportCSV}>
+              📥 Export CSV
+            </button>
 
             <div className="topbar-btn">
               🔔
@@ -254,7 +301,7 @@ function AdminClients() {
                   <th>Pengguna</th>
                   <th>Role</th>
                   <th>No HP</th>
-                  <th>Bergabung</th>
+                  {/* <th>Bergabung</th> */}
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -314,9 +361,9 @@ function AdminClients() {
                         </span>
                       </td>
                       <td style={{ fontSize: ".82rem" }}>{u.telpon || "-"}</td>
-                      <td style={{ fontSize: ".78rem", color: "var(--muted)" }}>
+                      {/* <td style={{ fontSize: ".78rem", color: "var(--muted)" }}>
                         {new Date(u.createdAt).toLocaleDateString("id-ID")}
-                      </td>
+                      </td> */}
                       <td>
                         <div style={{ display: "flex", gap: ".35rem" }}>
                           <button

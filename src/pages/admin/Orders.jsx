@@ -82,6 +82,53 @@ function AdminOrders() {
     return () => obs.disconnect();
   }, []);
 
+  const exportCSV = () => {
+    const headers = [
+      "Invoice",
+      "Pembeli",
+      "Email",
+      "Total",
+      "Status",
+      "Produk",
+      // "Tanggal Pesanan",
+    ];
+
+    const rows = filtered.map((o) => [
+      `INV-${String(o.id_order).padStart(4, "0")}`,
+      o.user?.nama || "",
+      o.user?.email || "",
+      o.total_harga,
+      o.status,
+      o.order_items
+        ?.map((item) => `${item.produk?.nama} (${item.jumlah})`)
+        .join(" | ") || "",
+      // new Date(o.createdAt).toLocaleDateString("id-ID"),
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row.map((field) => `"${String(field).replace(/"/g, '""')}"`).join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob(["\uFEFF" + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `laporan-pesanan-${new Date().toISOString().split("T")[0]}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div style={{ minHeight: "100vh", display: "flex", overflow: "hidden" }}>
       <SidebarAdmin />
@@ -92,7 +139,9 @@ function AdminOrders() {
             <div className="breadcrumb">Admin / Pesanan</div>
           </div>
           <div className="topbar-right">
-            <button className="btn btn-outline btn-sm">📥 Export CSV</button>
+            <button className="btn btn-outline btn-sm" onClick={exportCSV}>
+              📥 Export CSV
+            </button>
             <div className="topbar-btn">
               🔔<div className="notif-dot"></div>
             </div>
